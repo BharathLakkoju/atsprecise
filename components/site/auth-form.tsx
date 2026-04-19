@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
@@ -177,17 +177,28 @@ export function AuthForm() {
 
         <Button
           type="submit"
-          className="h-12 w-full"
+          className="h-12 w-full overflow-hidden"
           size="lg"
           disabled={loading}
         >
-          {loading
-            ? mode === "signup"
-              ? "Creating Account..."
-              : "Signing In..."
-            : mode === "signup"
-              ? "Create Account"
-              : "Sign In"}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={loading ? `${mode}-loading` : mode}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15, ease: "easeInOut" }}
+              className="block"
+            >
+              {loading
+                ? mode === "signup"
+                  ? "Creating Account..."
+                  : "Signing In..."
+                : mode === "signup"
+                  ? "Create Account"
+                  : "Sign In"}
+            </motion.span>
+          </AnimatePresence>
         </Button>
 
         {message && (
