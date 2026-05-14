@@ -4,11 +4,15 @@ import { useEffect, useState } from "react";
 import { ReactLenis } from "lenis/react";
 
 export function LenisProvider({ children }: { children: React.ReactNode }) {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  // Lazy initializer: runs once on the client, returns false on SSR
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(mediaQuery.matches);
 
     const handleChange = (e: MediaQueryListEvent) => {
       setPrefersReducedMotion(e.matches);

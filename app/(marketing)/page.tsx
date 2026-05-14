@@ -1,12 +1,34 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import { CtaSection } from "@/components/site/cta-section";
 import { FaqSection } from "@/components/site/faq-section";
-import { FeaturesSection } from "@/components/site/features-section";
 import { HeroSection } from "@/components/site/hero-section";
-import { HowItWorksSection } from "@/components/site/how-it-works-section";
-import { PricingSection } from "@/components/site/pricing-section";
-import { RoleGuidesSection } from "@/components/site/role-guides-section";
-import { TestimonialsSection } from "@/components/site/testimonials-section";
+// Below-the-fold sections: code-split so they don't block initial bundle parse
+const FeaturesSection = dynamic(() =>
+  import("@/components/site/features-section").then((m) => ({
+    default: m.FeaturesSection,
+  })),
+);
+const HowItWorksSection = dynamic(() =>
+  import("@/components/site/how-it-works-section").then((m) => ({
+    default: m.HowItWorksSection,
+  })),
+);
+const RoleGuidesSection = dynamic(() =>
+  import("@/components/site/role-guides-section").then((m) => ({
+    default: m.RoleGuidesSection,
+  })),
+);
+const PricingSection = dynamic(() =>
+  import("@/components/site/pricing-section").then((m) => ({
+    default: m.PricingSection,
+  })),
+);
+const TestimonialsSection = dynamic(() =>
+  import("@/components/site/testimonials-section").then((m) => ({
+    default: m.TestimonialsSection,
+  })),
+);
 import { absoluteUrl, createMetadata, siteConfig } from "@/lib/seo";
 import { faqs } from "@/lib/faq-data";
 

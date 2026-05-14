@@ -8,181 +8,206 @@
 */
 
 :root {
-  /* Surface Hierarchy */
-  --background: 48 24% 97%;         /* #f9f8f5 — warm base canvas */
-  --foreground: 30 10% 8%;          /* #151311 — on-surface */
+    /* Surface Hierarchy */
+    --background: 48 24% 97%; /* #f9f8f5 — warm base canvas */
+    --foreground: 30 10% 8%; /* #151311 — on-surface */
 
-  --card: 0 0% 100%;                /* #ffffff — interactive cards */
-  --card-foreground: 30 10% 8%;
+    --card: 0 0% 100%; /* #ffffff — interactive cards */
+    --card-foreground: 30 10% 8%;
 
-  --primary: 0 0% 0%;               /* #000000 — primary */
-  --primary-foreground: 0 0% 100%;  /* #ffffff — on-primary */
-  --primary-container: 0 0% 23%;    /* #3b3b3b — gradient endpoint */
-  --primary-fixed: 0 0% 37%;        /* #5e5e5e — hover state */
+    --primary: 0 0% 0%; /* #000000 — primary */
+    --primary-foreground: 0 0% 100%; /* #ffffff — on-primary */
+    --primary-container: 0 0% 23%; /* #3b3b3b — gradient endpoint */
+    --primary-fixed: 0 0% 37%; /* #5e5e5e — hover state */
 
-  --secondary: 40 18% 93%;          /* #f0eeea — warm surface-container-low */
-  --secondary-foreground: 30 10% 8%;
+    --secondary: 40 18% 93%; /* #f0eeea — warm surface-container-low */
+    --secondary-foreground: 30 10% 8%;
 
-  --muted: 40 12% 87%;              /* #e4e2dc — warm surface-container-highest */
-  --muted-foreground: 35 4% 40%;    /* #6a6762 — warm on-surface-variant */
+    --muted: 40 12% 87%; /* #e4e2dc — warm surface-container-highest */
+    --muted-foreground: 35 4% 40%; /* #6a6762 — warm on-surface-variant */
 
-  --accent: 40 18% 93%;             /* #f0eeea */
-  --accent-foreground: 30 10% 8%;
+    --accent: 40 18% 93%; /* #f0eeea */
+    --accent-foreground: 30 10% 8%;
 
-  --destructive: 0 63% 41%;         /* #ba1a1a */
-  --destructive-foreground: 0 0% 98%;
+    --destructive: 0 63% 41%; /* #ba1a1a */
+    --destructive-foreground: 0 0% 98%;
 
-  --border: 35 8% 77%;              /* #c8c4bc — warm outline-variant */
-  --input: 40 12% 87%;
-  --ring: 0 0% 0%;
-  --radius: 0rem;
+    --border: 35 8% 77%; /* #c8c4bc — warm outline-variant */
+    --input: 40 12% 87%;
+    --ring: 0 0% 0%;
+    --radius: 0rem;
 }
 
 * {
-  border-color: hsl(var(--border) / 0.15);
+    border-color: hsl(var(--border) / 0.15);
 }
 
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
 }
 
 body {
-  min-height: 100vh;
-  overflow-x: hidden;
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: var(--font-body), system-ui, sans-serif;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-body), system-ui, sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Typography — The Editorial Voice */
-h1, h2, h3, h4, h5, h6, .font-display {
-  font-family: var(--font-display), system-ui, sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-display {
+    font-family: var(--font-display), system-ui, sans-serif;
 }
 
 ::selection {
-  background: rgba(0, 0, 0, 0.12);
+    background: rgba(0, 0, 0, 0.12);
 }
 
 /* ─── Label Scale ─── */
 .label-sm {
-  font-size: 0.6875rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 500;
 }
 
 /* ─── Surface Layers ─── */
 .surface-base {
-  background-color: #f9f8f5;
+    background-color: #f9f8f5;
 }
 .surface-low {
-  background-color: #f0eeea;
+    background-color: #f0eeea;
 }
 .surface-lowest {
-  background-color: #ffffff;
+    background-color: #ffffff;
 }
 .surface-highest {
-  background-color: #e4e2dc;
+    background-color: #e4e2dc;
 }
 
 /* ─── Glassmorphism ─── */
 .glass {
-  background: rgba(249, 249, 249, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+    background: rgba(249, 249, 249, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 .glass-dark {
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 /* ─── Panel Grid (subtle technical background) ─── */
 .panel-grid {
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-  background-size: 32px 32px;
+    background-image:
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
 }
 
 /* ─── Score Ring (grayscale) ─── */
 .score-ring {
-  background: conic-gradient(
-    from 210deg,
-    #000000 0deg,
-    #3b3b3b var(--ring-progress),
-    #e2e2e2 var(--ring-progress),
-    #e2e2e2 360deg
-  );
+    background: conic-gradient(
+        from 210deg,
+        #000000 0deg,
+        #3b3b3b var(--ring-progress),
+        #e2e2e2 var(--ring-progress),
+        #e2e2e2 360deg
+    );
 }
 
 /* ─── Ghost Border (accessibility fallback) ─── */
 .ghost-border {
-  border: 1px solid hsl(var(--border) / 0.15);
+    border: 1px solid hsl(var(--border) / 0.15);
 }
 
 /* ─── Ambient Shadow ─── */
 .shadow-ambient {
-  box-shadow: 0 40px 80px rgba(26, 28, 28, 0.04);
+    box-shadow: 0 40px 80px rgba(26, 28, 28, 0.04);
 }
 
 /* ─── Precision Bar ─── */
 .precision-bar-track {
-  height: 4px;
-  background: #e2e2e2;
-  border-radius: 9999px;
+    height: 4px;
+    background: #e2e2e2;
+    border-radius: 9999px;
 }
 .precision-bar-indicator {
-  height: 4px;
-  background: #000000;
-  border-radius: 9999px;
+    height: 4px;
+    background: #000000;
+    border-radius: 9999px;
 }
 
 /* ─── Text Balance ─── */
 .text-balance {
-  text-wrap: balance;
+    text-wrap: balance;
 }
 
 /* ─── CTA Gradient (machined metallic) ─── */
 .cta-gradient {
-  background: linear-gradient(135deg, #000000, #3b3b3b);
+    background: linear-gradient(135deg, #000000, #3b3b3b);
 }
 
 /* ─── Glow Border (monochrome) ─── */
 .glow-border {
-  position: relative;
+    position: relative;
 }
 .glow-border::before {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(0,0,0,0.3), rgba(100,100,100,0.2));
-  mask: linear-gradient(#fff 0 0);
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  content: "";
-  pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.3),
+        rgba(100, 100, 100, 0.2)
+    );
+    mask: linear-gradient(#fff 0 0);
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    content: "";
+    pointer-events: none;
 }
 
 /* ─── Dark Section ─── */
 .dark-section {
-  background: #0a0a0a;
-  color: #ffffff;
+    background: #0a0a0a;
+    color: #ffffff;
 }
 
 /* ─── Scrollbar ─── */
 #role-guides .overflow-x-auto::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 *::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+    width: 0;
+    height: 0;
+}
+
+/* ─── Fade-in (scroll reveal) ─── */
+/* Initial state: invisible + offset. Driven by IntersectionObserver in FadeIn component. */
+.fade-in-item {
+    opacity: 0;
+    transform: translate(var(--fade-offset, 0px, 24px));
+    transition:
+        opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in-item[data-visible="true"] {
+    opacity: 1;
+    transform: translate(0px, 0px);
 }

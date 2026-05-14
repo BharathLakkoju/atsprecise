@@ -101,12 +101,11 @@ function LoaderOverlay({ message }: { message: string }) {
 /* ─── Provider ───────────────────────────────────────────────────────────── */
 
 const DEFAULT_MESSAGE = "INITIALIZING SYSTEM...";
-const INIT_DURATION_MS = 750;
-const AUTH_DURATION_MS = 1600;
+const AUTH_DURATION_MS = 600;
 
 export function LoadingProvider({ children }: { children: React.ReactNode }) {
-  // Start visible so the overlay covers the initial paint / hard refresh
-  const [isLoading, setIsLoading] = useState(true);
+  // Do NOT start as loading — show content immediately on page load
+  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState(DEFAULT_MESSAGE);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -131,16 +130,6 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
     setMessage(DEFAULT_MESSAGE);
   }, [clearTimer]);
-
-  /* Initial page load / hard refresh ──────────────────────────────────── */
-  useEffect(() => {
-    timerRef.current = setTimeout(() => {
-      setIsLoading(false);
-    }, INIT_DURATION_MS);
-
-    return clearTimer;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   /* Supabase auth events (login) ───────────────────────────────────────── */
   useEffect(() => {
