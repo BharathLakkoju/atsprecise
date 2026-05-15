@@ -18,7 +18,9 @@ export default function NotFound() {
     }
     supabase.auth
       .getUser()
-      .then(({ data }) => setIsLoggedIn(!!data.user))
+      .then((res: { data: { user: { id: string } | null } }) =>
+        setIsLoggedIn(!!res.data.user),
+      )
       .catch(() => setIsLoggedIn(false));
   }, []);
 
