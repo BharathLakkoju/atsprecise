@@ -45,6 +45,14 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Redirect authenticated users away from landing page and auth page to dashboard
+  if (user && (pathname === "/" || pathname === "/auth")) {
+    const dashboardUrl = request.nextUrl.clone();
+    dashboardUrl.pathname = "/app";
+    dashboardUrl.search = "";
+    return NextResponse.redirect(dashboardUrl);
+  }
+
   if (pathname.startsWith("/app") && !user && !isAnonymousTrialPath(pathname)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth";
