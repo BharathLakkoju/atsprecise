@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Brain, FileSearch, Target } from "lucide-react";
+import { Brain, FileSearch, Target, Sparkles } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import { FadeIn } from "@/components/site/fade-in";
@@ -26,6 +26,12 @@ const pillars = [
       "A structural audit of your career trajectory. We ensure your narrative aligns perfectly with the seniority of the target position.",
     icon: Target,
   },
+  {
+    title: "Role-Targeted Creation",
+    description:
+      "Enter a role like \"Frontend Developer\" and get a fully rewritten resume optimized for that category \u2014 stronger bullets, better framing, zero invented skills.",
+    icon: Sparkles,
+  },
 ];
 
 export function FeaturesSection() {
@@ -38,12 +44,13 @@ export function FeaturesSection() {
   // Background blob parallax
   const bgY = useTransform(scrollYProgress, [0, 1], [70, -70]);
 
-  // Staggered card parallax — each card moves at a different speed
+  // Staggered card parallax \u2014 each card moves at a different speed
   // creating a waterfall / depth illusion as the section scrolls
   const card0Y = useTransform(scrollYProgress, [0, 1], [60, -40]);
   const card1Y = useTransform(scrollYProgress, [0, 1], [30, -20]);
   const card2Y = useTransform(scrollYProgress, [0, 1], [90, -30]);
-  const cardYValues = [card0Y, card1Y, card2Y];
+  const card3Y = useTransform(scrollYProgress, [0, 1], [50, -25]);
+  const cardYValues = [card0Y, card1Y, card2Y, card3Y];
 
   return (
     <section
@@ -66,17 +73,17 @@ export function FeaturesSection() {
           </h2>
         </FadeIn>
 
-        <div className="mt-16 grid gap-6 md:grid-cols-3">
+        <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {pillars.map((pillar, index) => {
             const Icon = pillar.icon;
             return (
               <FadeIn key={pillar.title} delay={index * 0.1}>
-                {/* Parallax layer — moves at different speeds per card */}
+                {/* Parallax layer \u2014 moves at different speeds per card */}
                 <motion.div
                   style={{ y: cardYValues[index] }}
                   className="will-change-transform h-full"
                 >
-                  {/* Hover interaction layer — propagates state to icon child */}
+                  {/* Hover interaction layer \u2014 propagates state to icon child */}
                   <motion.div
                     initial="rest"
                     whileHover="hover"
