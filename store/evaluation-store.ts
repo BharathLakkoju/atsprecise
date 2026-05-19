@@ -20,9 +20,11 @@ interface EvaluationStore {
   history: HistoryEntry[];
   lastTailoringResult: TailoringResult | null;
   lastBuilderResult: TailoringResult | null;
+  lastCreatorResult: TailoringResult | null;
   setLatestResult: (jobTitleHint: string, result: AtsEvaluationResult) => void;
   setLastTailoringResult: (result: TailoringResult) => void;
   setLastBuilderResult: (result: TailoringResult) => void;
+  setLastCreatorResult: (result: TailoringResult) => void;
   clearResults: () => void;
 }
 
@@ -31,6 +33,7 @@ const initialEvaluationState = {
   history: [] as HistoryEntry[],
   lastTailoringResult: null as TailoringResult | null,
   lastBuilderResult: null as TailoringResult | null,
+  lastCreatorResult: null as TailoringResult | null,
 };
 
 export const useEvaluationStore = create<EvaluationStore>()(
@@ -52,6 +55,7 @@ export const useEvaluationStore = create<EvaluationStore>()(
         })),
       setLastTailoringResult: (result) => set({ lastTailoringResult: result }),
       setLastBuilderResult: (result) => set({ lastBuilderResult: result }),
+      setLastCreatorResult: (result) => set({ lastCreatorResult: result }),
       clearResults: () => set(initialEvaluationState)
     }),
     {
