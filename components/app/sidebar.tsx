@@ -8,6 +8,7 @@ import {
   ScanSearch,
   Wand2,
   PenLine,
+  Sparkles,
   Settings,
   LogOut,
   User as UserIcon,
@@ -32,6 +33,7 @@ const navItems: Array<{
   { label: "ANALYZE", href: "/app/analyze" as Route, icon: ScanSearch },
   { label: "TAILOR", href: "/app/tailor" as Route, icon: Wand2 },
   { label: "BUILD", href: "/app/build" as Route, icon: PenLine },
+  { label: "CREATOR", href: "/app/creator" as Route, icon: Sparkles },
   { label: "PROFILE", href: "/app/profile" as Route, icon: UserIcon },
 ];
 
@@ -82,14 +84,14 @@ export function Sidebar() {
     router.push("/");
   };
 
-  const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : "—";
+  const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : "\u2014";
 
   const isActive = (href: Route) =>
     pathname === href || (href !== "/app" && pathname.startsWith(href));
 
   return (
     <>
-      {/* ── Desktop sidebar (lg+) ─────────────────────────────────────── */}
+      {/* \u2500\u2500 Desktop sidebar (lg+) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-[hsl(var(--border)/0.08)] bg-surface-base lg:flex lg:h-full lg:overflow-y-auto">
         {/* Logo */}
         <div className="flex items-center gap-2 px-6 py-5 border-b border-[hsl(var(--border)/0.08)]">
@@ -176,7 +178,7 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* ── Mobile top bar (< lg) ─────────────────────────────────────── */}
+      {/* \u2500\u2500 Mobile top bar (< lg) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between px-4 border-b border-[hsl(var(--border)/0.08)] bg-surface-base lg:hidden">
         <div className="flex items-center gap-2">
           <Image
@@ -199,7 +201,7 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* ── Mobile bottom tab bar (< lg) ─────────────────────────────── */}
+      {/* \u2500\u2500 Mobile bottom tab bar (< lg) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
       <nav className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-[hsl(var(--border)/0.08)] bg-surface-base px-1 lg:hidden">
         {navItems.map((item) => {
           const Icon = item.icon;
