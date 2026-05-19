@@ -66,7 +66,9 @@ export function ResumeCreatorForm({
     }
 
     if (targetRole.trim().length < 3) {
-      setError("Enter a target role (e.g. 'Frontend Developer', 'Data Scientist').");
+      setError(
+        "Enter a target role (e.g. 'Frontend Developer', 'Data Scientist').",
+      );
       return;
     }
 

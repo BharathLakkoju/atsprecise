@@ -29,7 +29,7 @@ const pillars = [
   {
     title: "Role-Targeted Creation",
     description:
-      "Enter a role like \"Frontend Developer\" and get a fully rewritten resume optimized for that category \u2014 stronger bullets, better framing, zero invented skills.",
+      'Enter a role like "Frontend Developer" and get a fully rewritten resume optimized for that category \u2014 stronger bullets, better framing, zero invented skills.',
     icon: Sparkles,
   },
 ];

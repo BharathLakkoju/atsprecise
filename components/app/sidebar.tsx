@@ -84,7 +84,9 @@ export function Sidebar() {
     router.push("/");
   };
 
-  const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : "\u2014";
+  const initials = user?.email
+    ? user.email.slice(0, 2).toUpperCase()
+    : "\u2014";
 
   const isActive = (href: Route) =>
     pathname === href || (href !== "/app" && pathname.startsWith(href));

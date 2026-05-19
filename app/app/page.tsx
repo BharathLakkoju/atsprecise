@@ -281,9 +281,10 @@ export default function AppDashboardPage() {
                 Target a role. Not a JD.
               </h2>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Enter a role (e.g. &quot;Frontend Developer&quot;) and get a resume optimized
-                for that role category — stronger bullet points, better framing, and zero
-                invented skills. Works entirely from your existing profile.
+                Enter a role (e.g. &quot;Frontend Developer&quot;) and get a
+                resume optimized for that role category — stronger bullet
+                points, better framing, and zero invented skills. Works entirely
+                from your existing profile.
               </p>
             </div>
             <Link
