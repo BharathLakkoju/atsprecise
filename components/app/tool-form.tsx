@@ -17,6 +17,7 @@ import { ResultsDashboard } from "@/components/site/results-dashboard";
 import { TailoringDashboard } from "@/components/site/tailoring-dashboard";
 import type { TailoringResult } from "@/components/site/tailoring-dashboard";
 import { ResumeBuilderForm } from "@/components/site/resume-builder-form";
+import { ResumeCreatorForm } from "@/components/site/resume-creator-form";
 import { AuthGateModal } from "@/components/site/auth-gate-modal";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { clientEvaluationSchema } from "@/lib/validations/evaluation";
 import { useEvaluationStore } from "@/store/evaluation-store";
 
-export type ToolMode = "analysis" | "tailoring" | "builder";
+export type ToolMode = "analysis" | "tailoring" | "builder" | "creator";
 type FileStatus = "idle" | "selected" | "ready";
 type ExportFormat = "pdf" | "docx";
 
@@ -52,6 +53,12 @@ const TOOL_META: Record<
     sub: "Generate a JD-matched resume from your saved profile.",
     submitLabel: "BUILD RESUME",
   },
+  creator: {
+    eyebrow: "RESUME CREATOR",
+    heading: "Target a role. Not a JD.",
+    sub: "Rewrite your resume for a role category using only your existing experience — stronger bullets, better framing, zero invented skills.",
+    submitLabel: "CREATE RESUME",
+  },
 };
 
 export function ToolForm({ mode }: { mode: ToolMode }) {
@@ -77,6 +84,8 @@ export function ToolForm({ mode }: { mode: ToolMode }) {
     lastBuilderResult,
     setLastTailoringResult,
     setLastBuilderResult,
+    lastCreatorResult,
+    setLastCreatorResult,
   } = useEvaluationStore();
 
   useEffect(() => {
@@ -98,6 +107,9 @@ export function ToolForm({ mode }: { mode: ToolMode }) {
       setShowResults(true);
     } else if (mode === "builder" && lastBuilderResult) {
       setTailoringResult(lastBuilderResult);
+      setShowResults(true);
+    } else if (mode === "creator" && lastCreatorResult) {
+      setTailoringResult(lastCreatorResult);
       setShowResults(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -267,7 +279,7 @@ export function ToolForm({ mode }: { mode: ToolMode }) {
         >
           <ProcessingState
             activeStage={activeStage}
-            mode={mode === "builder" ? "tailoring" : mode}
+            mode={mode === "builder" || mode === "creator" ? "tailoring" : mode}
           />
         </motion.div>
       </div>
@@ -382,6 +394,69 @@ export function ToolForm({ mode }: { mode: ToolMode }) {
                 onResult={(result: TailoringResult) => {
                   setTailoringResult(result);
                   setLastBuilderResult(result);
+                  setShowResults(true);
+                }}
+                onAuthGate={() => setShowAuthGate(true)}
+              />
+            </div>
+          </motion.div>
+        </div>
+      </>
+    );
+  }
+
+  /* ── Creator result ───────────────────────────────────────────────── */
+  if (showResults && mode === "creator" && tailoringResult) {
+    return (
+      <div className="p-4 sm:p-6 lg:p-10">
+        <motion.div
+          key="creator-result"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowResults(false);
+                setTailoringResult(null);
+              }}
+            >
+              ← New Creation
+            </Button>
+          </div>
+          <TailoringDashboard result={tailoringResult} />
+        </motion.div>
+      </div>
+    );
+  }
+
+  /* ── Creator mode ─────────────────────────────────────────────────── */
+  if (mode === "creator") {
+    return (
+      <>
+        <AuthGateModal
+          isOpen={showAuthGate}
+          onClose={() => setShowAuthGate(false)}
+        />
+        <div className="p-4 sm:p-6 lg:p-10 max-lg:mb-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="label-sm text-muted-foreground">{meta.eyebrow}</p>
+            <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              {meta.heading}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">{meta.sub}</p>
+            <div className="mt-6">
+              <ResumeCreatorForm
+                onResult={(result: TailoringResult) => {
+                  setTailoringResult(result);
+                  setLastCreatorResult(result);
                   setShowResults(true);
                 }}
                 onAuthGate={() => setShowAuthGate(true)}

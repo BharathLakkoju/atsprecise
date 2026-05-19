@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import type { Route } from "next";
 import {
   ScanSearch,
   Wand2,
   PenLine,
+  Sparkles,
   ArrowRight,
   BarChart3,
   Target,
@@ -259,13 +261,47 @@ export default function AppDashboardPage() {
             </Link>
           </motion.div>
 
+          {/* Creator — wide card (new feature) */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+            className="flex flex-col justify-between bg-surface-lowest p-7 lg:col-span-2"
+          >
+            <div>
+              <div className="mb-5 flex items-start justify-between">
+                <div className="flex h-10 w-10 items-center justify-center bg-foreground text-primary-foreground">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <span className="label-sm text-muted-foreground">
+                  RESUME CREATOR
+                </span>
+              </div>
+              <h2 className="font-display text-2xl font-bold text-foreground">
+                Target a role. Not a JD.
+              </h2>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                Enter a role (e.g. &quot;Frontend Developer&quot;) and get a resume optimized
+                for that role category — stronger bullet points, better framing, and zero
+                invented skills. Works entirely from your existing profile.
+              </p>
+            </div>
+            <Link
+              href={"/app/creator" as Route}
+              className="mt-8 inline-flex items-center gap-2 bg-foreground px-5 py-2.5 text-xs font-semibold uppercase tracking-widest text-primary-foreground transition-opacity hover:opacity-80 self-start"
+            >
+              CREATE RESUME
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </motion.div>
+
           {/* Stats panel */}
           {stats ? (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              className="flex flex-col bg-foreground p-7 lg:col-span-2"
+              transition={{ duration: 0.3, delay: 0.25 }}
+              className="flex flex-col bg-foreground p-7 lg:col-span-3"
             >
               <p className="label-sm text-white/50 mb-5">YOUR STATS</p>
               <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
@@ -291,8 +327,8 @@ export default function AppDashboardPage() {
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              className="flex flex-col justify-center bg-surface-low p-7 lg:col-span-2"
+              transition={{ duration: 0.3, delay: 0.25 }}
+              className="flex flex-col justify-center bg-surface-low p-7 lg:col-span-3"
             >
               <p className="label-sm text-muted-foreground mb-2">
                 NO SCANS YET

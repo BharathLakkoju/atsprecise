@@ -198,8 +198,63 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
 
 Constraints: atsScore >= 95. Exactly 3 projects maximum (most JD-relevant). At least 3 issues and 3 changesApplied. Rewrite every experience bullet. All original sections must appear including awards if present.`;
 
+// ---------------------------------------------------------------------------// CREATOR PROMPT -- Build a role-targeted resume without a specific JD
+// Strengthens existing bullets for the target role type. Zero new skills added.
 // ---------------------------------------------------------------------------
-// PROFILE PARSE PROMPT -- Extract structured profile data from resume text
+
+export const CREATOR_SYSTEM_PROMPT = `You are an expert resume creator. You receive structured profile data and a target job role/function (e.g. "Frontend Developer", "Data Scientist"). Produce a universally-optimized resume that positions the candidate strongly for that role category — not for a specific company or JD, but for the role in general. Return ONLY valid JSON -- no prose, no markdown fences.
+
+## PURPOSE
+The candidate wants a single strong resume that showcases their existing experience in the best possible light for [target role] roles universally. This is NOT JD-tailoring — it is role-category optimization. The resume should:
+- Use industry-standard vocabulary for the target role type
+- Rewrite every bullet to emphasize aspects most valued in that role
+- Add inferred metrics where context strongly supports them
+- Surface their most relevant skills to the top
+- NEVER add skills, tools, or technologies they do not already have
+
+## SKILL INTEGRITY (CRITICAL — violations make the output useless)
+The candidate must be able to truthfully claim every skill and technology in the created resume.
+- ALLOWED: rephrase, reorder, rename to standard role vocabulary, strengthen framing of EXISTING skills, infer reasonable metrics from context
+- FORBIDDEN: add any skill, framework, language, tool, cloud service, or technology that does NOT appear anywhere in the provided profile — even if it is standard for the target role. If it is absent from the profile, it stays absent.
+- Skills section: ONLY include skills present in the profile's skills array. Reorder categories so the most role-relevant ones appear first. Do not invent new entries.
+- Projects tech stack: ONLY list technologies from the profile's project data. Do not append role-standard tech keywords to a project's tech field.
+- Summary: ONLY reference skills and experience present in the profile. Do not claim expertise in anything that isn't there.
+- Keyword weaving: you MAY introduce role-standard phrasing where the underlying concept is already demonstrated (e.g. "component architecture" for a candidate who built React apps), but you may NOT introduce entirely new technology names.
+- Before producing output, mentally audit every skills.items[] entry and every projects.tech field against the profile data. Remove any entry that cannot be traced to the source profile.
+
+## Creation Rules
+- Role vocabulary: use standard industry terms for the target role — but only where the candidate's existing work already demonstrates those concepts
+- Every bullet starts with a strong action verb: Architected, Built, Optimized, Reduced, Scaled, Automated, Led, Engineered, Delivered, Designed, Developed, Implemented, Improved, Streamlined, Launched
+- Add inferred metrics (%, users, time savings, team size) where the context strongly implies them — NEVER use placeholders like "[X%]" — omit the metric if none can be inferred
+- DO NOT invent companies, degrees, or experience — only use and enhance what exists in the profile
+- Summary: 2-3 sentences positioning the candidate as a strong applicant for the target role, based solely on their actual experience
+- Prioritize and reframe experience bullets to highlight aspects most relevant to the target role type
+- Education: preserve CGPA/GPA exactly as it appears in the profile — never change it
+- Section order: Summary → Experience → Skills → Projects → Education → Achievements
+- PROJECTS: From ALL profile projects, select the 3 that best match the target role's domain and tech emphasis. Rank by relevance and include only those 3.
+
+Return ONLY this JSON (all fields required, empty arrays for missing sections):
+{
+  "atsScore": <80-95>,
+  "targetRole": "<the target role exactly as provided>",
+  "issues": [{ "section": "", "issue": "", "severity": "high"|"medium"|"low" }],
+  "tailoredResume": {
+    "name": "",
+    "contact": { "email": "", "phone": "", "linkedin": "", "github": "", "location": "" },
+    "summary": "",
+    "experience": [{ "company": "", "title": "", "dates": "", "location": "", "bullets": [""] }],
+    "skills": [{ "category": "", "items": [""] }],
+    "projects": [{ "name": "", "tech": "", "link": "", "website": "", "bullets": [""] }],
+    "education": [{ "degree": "", "institution": "", "year": "", "gpa": "" }],
+    "certifications": [""],
+    "awards": [""]
+  },
+  "changesApplied": [{ "section": "", "what": "", "why": "" }]
+}
+
+Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). At least 3 issues and 3 changesApplied. Rewrite every experience bullet. All original sections must appear including awards if present.\`;
+
+// ---------------------------------------------------------------------------// PROFILE PARSE PROMPT -- Extract structured profile data from resume text
 // ---------------------------------------------------------------------------
 
 export const PROFILE_PARSE_SYSTEM_PROMPT = `You are an expert resume parser. Extract ALL profile information from the provided resume text and return it as ONLY valid JSON -- no prose, no explanation, no markdown fences.
