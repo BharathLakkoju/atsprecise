@@ -252,9 +252,10 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). At least 3 issues and 3 changesApplied. Rewrite every experience bullet. All original sections must appear including awards if present.\`;
+Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). At least 3 issues and 3 changesApplied. Rewrite every experience bullet. All original sections must appear including awards if present.`;
 
-// ---------------------------------------------------------------------------// PROFILE PARSE PROMPT -- Extract structured profile data from resume text
+// ---------------------------------------------------------------------------
+// PROFILE PARSE PROMPT -- Extract structured profile data from resume text
 // ---------------------------------------------------------------------------
 
 export const PROFILE_PARSE_SYSTEM_PROMPT = `You are an expert resume parser. Extract ALL profile information from the provided resume text and return it as ONLY valid JSON -- no prose, no explanation, no markdown fences.
