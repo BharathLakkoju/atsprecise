@@ -227,7 +227,7 @@ The candidate must be able to truthfully claim every skill and technology in the
 - Every bullet starts with a strong action verb: Architected, Built, Optimized, Reduced, Scaled, Automated, Led, Engineered, Delivered, Designed, Developed, Implemented, Improved, Streamlined, Launched
 - Add inferred metrics (%, users, time savings, team size) where the context strongly implies them — NEVER use placeholders like "[X%]" — omit the metric if none can be inferred
 - DO NOT invent companies, degrees, or experience — only use and enhance what exists in the profile
-- Summary: 2-3 sentences positioning the candidate as a strong applicant for the target role, based solely on their actual experience
+- Summary: CRITICAL RULE — Open with the TARGET ROLE title as the candidate's identity, never their current/original job title. Format: "[Target Role] with [X]+ years of experience [doing the most role-relevant thing they actually did]." Then 1-2 sentences weaving their strongest existing skills and measurable impact most relevant to the target role. The summary must read as if they have always been a [Target Role] — confident, specific, ATS-optimized for that role category. Use role-standard terminology. Include their strongest real metrics. Do NOT write "Software Engineer targeting..." or "experienced professional seeking..." — the opening noun must BE the target role title.
 - Prioritize and reframe experience bullets to highlight aspects most relevant to the target role type
 - Education: preserve CGPA/GPA exactly as it appears in the profile — never change it
 - Section order: Summary → Experience → Skills → Projects → Education → Achievements
