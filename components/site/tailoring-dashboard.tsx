@@ -587,7 +587,7 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
     AlignmentType,
     Packer,
     TabStopType,
-    TabStopLeader,
+    LeaderType,
   } = await import("docx");
 
   const BLUE = "1565C0";
@@ -726,7 +726,7 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
             {
               type: TabStopType.RIGHT,
               position: 9360,
-              leader: TabStopLeader.NONE,
+              leader: LeaderType.NONE,
             },
           ],
         }),
@@ -752,7 +752,7 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
             {
               type: TabStopType.RIGHT,
               position: 9360,
-              leader: TabStopLeader.NONE,
+              leader: LeaderType.NONE,
             },
           ],
           spacing: { after: 60 },
@@ -815,7 +815,7 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
             {
               type: TabStopType.RIGHT,
               position: 9360,
-              leader: TabStopLeader.NONE,
+              leader: LeaderType.NONE,
             },
           ],
         }),

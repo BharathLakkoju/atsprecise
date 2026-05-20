@@ -194,6 +194,7 @@ export async function POST(request: Request) {
     location: String(parsed.location ?? "").trim(),
     linkedin: String(parsed.linkedin ?? "").trim(),
     github: String(parsed.github ?? "").trim(),
+    portfolio: String(parsed.portfolio ?? "").trim(),
     summary: String(parsed.summary ?? "").trim(),
     experience: (Array.isArray(parsed.experience) ? parsed.experience : []).map((e) => ({
       company: String(e.company ?? "").trim(),
