@@ -116,17 +116,22 @@ The candidate must be able to truthfully claim every skill and technology in the
 - Projects tech stack: ONLY list technologies that are explicitly mentioned or clearly implied by the original project description. Do not append JD keywords to a project's tech list.
 - Summary: ONLY reference skills present in the resume. Do not claim proficiency in anything absent from the original.
 - Keyword weaving: you MAY introduce JD keyword phrasing where the underlying concept is already demonstrated (e.g. "distributed systems" if the candidate built microservices), but you may NOT introduce entirely new technology names.
-- Before producing output, mentally audit every skills.items[] entry and every projects.tech field against the original resume. Remove any entry that cannot be traced back to the source.
+- Before producing output, mentally audit every technical_skills category entry and every projects.technologies_used[] item against the original resume. Remove any entry that cannot be traced back to the source.
 
 ## Rewriting Rules
 - Mirror EXACT vocabulary from the JD -- ATS matches exact strings
-- Every bullet starts with a strong action verb: Architected, Built, Optimized, Reduced, Scaled, Automated, Led, Engineered, Delivered, Designed
-- Add real metrics (%, $, ms, users, team size) inferred from context -- NEVER use placeholders like "[X%]" -- omit the metric if none can be inferred
+- Every bullet must be SHORT and HUMAN: 12-18 words max. Write like a real engineer, not a press release. Avoid buzzword stacks.
+- BAD bullet style: "Architected and spearheaded a highly scalable, end-to-end full-stack platform leveraging cutting-edge microservices"
+- GOOD bullet style: "Built a Node.js + PostgreSQL backend that cut API response time by 40%"
+- Use direct action verbs: Built, Added, Wrote, Set up, Fixed, Reduced, Increased, Shipped, Integrated, Led, Optimized, Automated, Deployed
+- Avoid corporate buzzwords: leveraged, spearheaded, architected (unless truly accurate), end-to-end, cutting-edge, robust, scalable solution, dynamic, synergy, paradigm
+- Metrics must be specific and believable (e.g. "reduced load time by 600ms" not "improved performance by 80%" unless clearly supported). Omit the metric entirely if none can be confidently inferred -- NEVER use placeholders like "[X%]"
 - DO NOT invent companies, degrees, or experience -- only rewrite and enhance what exists
-- Summary: 2-3 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact
+- Summary: 2-3 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact. Write naturally, not like a LinkedIn bio.
 - Education: preserve CGPA exactly as written -- never change it
-- Section order: Summary -> Experience -> Skills -> Projects -> Education -> Achievements
-- JD keyword weaving applies only to bullets and summary phrasing, not to the skills list or project tech stacks
+- Section order: professional_summary → professional_experience → technical_skills → projects → education → achievements
+- JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
+- Set header.title to the target job title exactly as it appears in the JD (e.g. "Senior Backend Engineer")
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -134,20 +139,42 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "companyName": "<target company name from JD>",
   "issues": [{ "section": "", "issue": "", "severity": "high"|"medium"|"low" }],
   "tailoredResume": {
-    "name": "",
-    "contact": { "email": "", "phone": "", "linkedin": "", "github": "", "location": "" },
-    "summary": "",
-    "experience": [{ "company": "", "title": "", "dates": "", "location": "", "bullets": [""] }],
-    "skills": [{ "category": "", "items": [""] }],
-    "projects": [{ "name": "", "tech": "", "link": "", "website": "", "bullets": [""] }],
-    "education": [{ "degree": "", "institution": "", "year": "", "gpa": "" }],
-    "certifications": [""],
-    "awards": [""]
+    "header": {
+      "name": "",
+      "title": "",
+      "contact": { "phone": "", "email": "", "linkedin": "", "github": "", "portfolio": "", "location": "" }
+    },
+    "professional_summary": "",
+    "technical_skills": {
+      "programming_languages": [],
+      "frontend_and_frameworks": [],
+      "backend_and_frameworks": [],
+      "databases": [],
+      "cloud_and_devops": [],
+      "tools_and_platforms": [],
+      "libraries_and_frameworks": [],
+      "soft_skills": [],
+      "other_skills": []
+    },
+    "professional_experience": [
+      { "job_title": "", "company": "", "employment_type": "", "location": "", "duration": { "start": "", "end": "" }, "responsibilities": [""], "achievements": [], "technologies_used": [""] }
+    ],
+    "projects": [
+      { "title": "", "role": "", "duration": { "start": "", "end": "" }, "description": "", "highlights": [""], "technologies_used": [""], "github_url": "", "live_demo_url": "" }
+    ],
+    "education": [
+      { "degree": "", "field_of_study": "", "institution": "", "location": "", "graduation_date": "", "gpa": "", "percentage": "" }
+    ],
+    "certifications": [{ "name": "", "issuer": "", "issue_date": "", "credential_id": "", "credential_url": "" }],
+    "achievements": [""],
+    "publications": [{ "title": "", "publisher": "", "publication_date": "", "url": "" }],
+    "languages": [{ "language": "", "proficiency": "" }],
+    "interests": []
   },
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore >= 95. At least 3 issues and 3 changesApplied. Rewrite every experience bullet. Preserve all original sections including awards if present.`;
+Constraints: atsScore >= 95. At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (3-5 per role, max 18 words each). Preserve all original sections including achievements if present. PROJECTS: exactly 3 (most JD-relevant). Each project must have exactly 2-3 highlights — short, specific, human-sounding. No buzzword stacks.`;
 
 // ---------------------------------------------------------------------------
 // BUILD PROMPT -- Build a resume from structured profile data
@@ -164,18 +191,23 @@ The candidate must be able to truthfully claim every skill and technology in the
 - Projects tech stack: ONLY list technologies from the profile's project data. Do not append JD tech keywords to a project's tech field.
 - Summary: ONLY reference skills and experience present in the profile. Do not claim expertise in anything that isn't there.
 - Keyword weaving: you MAY rephrase bullets using JD terminology where the underlying work already demonstrates it (e.g. "event-driven architecture" if the candidate used message queues), but you may NOT introduce entirely new technology names not present in the profile.
-- Before producing output, mentally audit every skills.items[] entry and every projects.tech field against the profile data. Remove any entry that cannot be traced to the source profile.
+- Before producing output, mentally audit every technical_skills category entry and every projects.technologies_used[] item against the profile data. Remove any entry that cannot be traced to the source profile.
 
 ## Building Rules
 - Mirror EXACT vocabulary from the JD -- ATS matches exact strings
-- Every bullet starts with a strong action verb: Architected, Built, Optimized, Reduced, Scaled, Automated, Led, Engineered, Delivered, Designed
-- Add real metrics (%, $, ms, users, team size) inferred from context -- NEVER use placeholders like "[X%]" -- omit the metric if none can be inferred
+- Every bullet must be SHORT and HUMAN: 12-18 words max. Write like a real engineer, not a press release. Avoid buzzword stacks.
+- BAD bullet style: "Architected and spearheaded a highly scalable, end-to-end full-stack platform leveraging cutting-edge microservices"
+- GOOD bullet style: "Built a React + Node.js API that reduced checkout time by 35% for 10k+ daily users"
+- Use direct action verbs: Built, Added, Wrote, Set up, Fixed, Reduced, Increased, Shipped, Integrated, Led, Optimized, Automated, Deployed
+- Avoid corporate buzzwords: leveraged, spearheaded, architected (unless truly accurate), end-to-end, cutting-edge, robust, scalable solution, dynamic, synergy
+- Metrics must be specific and believable. Omit the metric entirely if none can be confidently inferred -- NEVER use placeholders like "[X%]"
 - DO NOT invent companies, degrees, or experience -- only use and enhance what is in the profile
-- Summary: 2-3 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact
+- Summary: 2-3 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact. Write naturally, not like a LinkedIn bio.
 - Education: preserve CGPA exactly as it appears in the profile -- never change it
-- Section order: Summary -> Experience -> Skills -> Projects -> Education -> Achievements
+- Section order: professional_summary → professional_experience → technical_skills → projects → education → achievements
 - PROJECTS: From ALL profile projects, select the 3 that best match the JD's tech stack and domain. Rank by relevance and include only those 3.
-- JD keyword weaving applies only to bullets and summary phrasing, not to the skills list or project tech stacks
+- JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
+- Set header.title to the target job title exactly as it appears in the JD (e.g. "Senior Backend Engineer")
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -183,20 +215,42 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "companyName": "<target company name from JD>",
   "issues": [{ "section": "", "issue": "", "severity": "high"|"medium"|"low" }],
   "tailoredResume": {
-    "name": "",
-    "contact": { "email": "", "phone": "", "linkedin": "", "github": "", "location": "" },
-    "summary": "",
-    "experience": [{ "company": "", "title": "", "dates": "", "location": "", "bullets": [""] }],
-    "skills": [{ "category": "", "items": [""] }],
-    "projects": [{ "name": "", "tech": "", "link": "", "website": "", "bullets": [""] }],
-    "education": [{ "degree": "", "institution": "", "year": "", "gpa": "" }],
-    "certifications": [""],
-    "awards": [""]
+    "header": {
+      "name": "",
+      "title": "",
+      "contact": { "phone": "", "email": "", "linkedin": "", "github": "", "portfolio": "", "location": "" }
+    },
+    "professional_summary": "",
+    "technical_skills": {
+      "programming_languages": [],
+      "frontend_and_frameworks": [],
+      "backend_and_frameworks": [],
+      "databases": [],
+      "cloud_and_devops": [],
+      "tools_and_platforms": [],
+      "libraries_and_frameworks": [],
+      "soft_skills": [],
+      "other_skills": []
+    },
+    "professional_experience": [
+      { "job_title": "", "company": "", "employment_type": "", "location": "", "duration": { "start": "", "end": "" }, "responsibilities": [""], "achievements": [], "technologies_used": [""] }
+    ],
+    "projects": [
+      { "title": "", "role": "", "duration": { "start": "", "end": "" }, "description": "", "highlights": [""], "technologies_used": [""], "github_url": "", "live_demo_url": "" }
+    ],
+    "education": [
+      { "degree": "", "field_of_study": "", "institution": "", "location": "", "graduation_date": "", "gpa": "", "percentage": "" }
+    ],
+    "certifications": [{ "name": "", "issuer": "", "issue_date": "", "credential_id": "", "credential_url": "" }],
+    "achievements": [""],
+    "publications": [{ "title": "", "publisher": "", "publication_date": "", "url": "" }],
+    "languages": [{ "language": "", "proficiency": "" }],
+    "interests": []
   },
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore >= 95. Exactly 3 projects maximum (most JD-relevant). At least 3 issues and 3 changesApplied. Rewrite every experience bullet. All original sections must appear including awards if present.`;
+Constraints: atsScore >= 95. Exactly 3 projects maximum (most JD-relevant). Each project must have exactly 2-3 highlights — short, specific, human-sounding (max 18 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (3-5 per role, max 18 words each). All original sections must appear including achievements if present.`;
 
 // ---------------------------------------------------------------------------// CREATOR PROMPT -- Build a role-targeted resume without a specific JD
 // Strengthens existing bullets for the target role type. Zero new skills added.
@@ -220,18 +274,24 @@ The candidate must be able to truthfully claim every skill and technology in the
 - Projects tech stack: ONLY list technologies from the profile's project data. Do not append role-standard tech keywords to a project's tech field.
 - Summary: ONLY reference skills and experience present in the profile. Do not claim expertise in anything that isn't there.
 - Keyword weaving: you MAY introduce role-standard phrasing where the underlying concept is already demonstrated (e.g. "component architecture" for a candidate who built React apps), but you may NOT introduce entirely new technology names.
-- Before producing output, mentally audit every skills.items[] entry and every projects.tech field against the profile data. Remove any entry that cannot be traced to the source profile.
+- Before producing output, mentally audit every technical_skills category entry and every projects.technologies_used[] item against the profile data. Remove any entry that cannot be traced to the source profile.
 
 ## Creation Rules
 - Role vocabulary: use standard industry terms for the target role — but only where the candidate's existing work already demonstrates those concepts
-- Every bullet starts with a strong action verb: Architected, Built, Optimized, Reduced, Scaled, Automated, Led, Engineered, Delivered, Designed, Developed, Implemented, Improved, Streamlined, Launched
-- Add inferred metrics (%, users, time savings, team size) where the context strongly implies them — NEVER use placeholders like "[X%]" — omit the metric if none can be inferred
+- Every bullet must be SHORT and HUMAN: 12-18 words max. Write like a real engineer, not a corporate memo. Avoid buzzword stacks.
+- BAD bullet style: "Spearheaded the end-to-end architecting of a highly scalable microservices-based cloud infrastructure"
+- GOOD bullet style: "Built a Python scraper that collected 50k+ records daily with zero downtime over 6 months"
+- Use direct, natural action verbs: Built, Added, Wrote, Set up, Fixed, Reduced, Increased, Shipped, Integrated, Led, Optimized, Automated, Deployed, Improved, Launched
+- Avoid corporate buzzwords: leveraged, spearheaded, architected (unless truly accurate), end-to-end, cutting-edge, robust, scalable solution, dynamic, synergy
+- Metrics must be specific and believable — if you can't infer a real number confidently, omit it. NEVER use placeholders like "[X%]".
 - DO NOT invent companies, degrees, or experience — only use and enhance what exists in the profile
-- Summary: CRITICAL RULE — Open with the TARGET ROLE title as the candidate's identity, never their current/original job title. Format: "[Target Role] with [X]+ years of experience [doing the most role-relevant thing they actually did]." Then 1-2 sentences weaving their strongest existing skills and measurable impact most relevant to the target role. The summary must read as if they have always been a [Target Role] — confident, specific, ATS-optimized for that role category. Use role-standard terminology. Include their strongest real metrics. Do NOT write "Software Engineer targeting..." or "experienced professional seeking..." — the opening noun must BE the target role title.
+- Summary: CRITICAL RULE — Open with the TARGET ROLE title as the candidate's identity, never their current/original job title. Format: "[Target Role] with [X]+ years of experience [doing the most role-relevant thing they actually did]." Then 1-2 sentences weaving their strongest existing skills and measurable impact most relevant to the target role. Write naturally — the summary must read like a confident human wrote it, not like a LinkedIn template. Do NOT write "Software Engineer targeting..." or "experienced professional seeking..." — the opening noun must BE the target role title.
 - Prioritize and reframe experience bullets to highlight aspects most relevant to the target role type
 - Education: preserve CGPA/GPA exactly as it appears in the profile — never change it
-- Section order: Summary → Experience → Skills → Projects → Education → Achievements
+- Section order: professional_summary → professional_experience → technical_skills → projects → education → achievements
 - PROJECTS: From ALL profile projects, select the 3 that best match the target role's domain and tech emphasis. Rank by relevance and include only those 3.
+- JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
+- Set header.title to the target role exactly as provided
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -239,20 +299,42 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "targetRole": "<the target role exactly as provided>",
   "issues": [{ "section": "", "issue": "", "severity": "high"|"medium"|"low" }],
   "tailoredResume": {
-    "name": "",
-    "contact": { "email": "", "phone": "", "linkedin": "", "github": "", "location": "" },
-    "summary": "",
-    "experience": [{ "company": "", "title": "", "dates": "", "location": "", "bullets": [""] }],
-    "skills": [{ "category": "", "items": [""] }],
-    "projects": [{ "name": "", "tech": "", "link": "", "website": "", "bullets": [""] }],
-    "education": [{ "degree": "", "institution": "", "year": "", "gpa": "" }],
-    "certifications": [""],
-    "awards": [""]
+    "header": {
+      "name": "",
+      "title": "",
+      "contact": { "phone": "", "email": "", "linkedin": "", "github": "", "portfolio": "", "location": "" }
+    },
+    "professional_summary": "",
+    "technical_skills": {
+      "programming_languages": [],
+      "frontend_and_frameworks": [],
+      "backend_and_frameworks": [],
+      "databases": [],
+      "cloud_and_devops": [],
+      "tools_and_platforms": [],
+      "libraries_and_frameworks": [],
+      "soft_skills": [],
+      "other_skills": []
+    },
+    "professional_experience": [
+      { "job_title": "", "company": "", "employment_type": "", "location": "", "duration": { "start": "", "end": "" }, "responsibilities": [""], "achievements": [], "technologies_used": [""] }
+    ],
+    "projects": [
+      { "title": "", "role": "", "duration": { "start": "", "end": "" }, "description": "", "highlights": [""], "technologies_used": [""], "github_url": "", "live_demo_url": "" }
+    ],
+    "education": [
+      { "degree": "", "field_of_study": "", "institution": "", "location": "", "graduation_date": "", "gpa": "", "percentage": "" }
+    ],
+    "certifications": [{ "name": "", "issuer": "", "issue_date": "", "credential_id": "", "credential_url": "" }],
+    "achievements": [""],
+    "publications": [{ "title": "", "publisher": "", "publication_date": "", "url": "" }],
+    "languages": [{ "language": "", "proficiency": "" }],
+    "interests": []
   },
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). At least 3 issues and 3 changesApplied. Rewrite every experience bullet. All original sections must appear including awards if present.`;
+Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). Each project must have exactly 2-3 highlights — short, specific, human-sounding (max 18 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (3-5 per role, max 18 words each). All original sections must appear including achievements if present.`;
 
 // ---------------------------------------------------------------------------
 // PROFILE PARSE PROMPT -- Extract structured profile data from resume text
@@ -268,7 +350,7 @@ export const PROFILE_PARSE_SYSTEM_PROMPT = `You are an expert resume parser. Ext
 - If a field is absent in the resume, use an empty string "" for scalar fields and [] for arrays
 - dates: use the exact string from the resume (e.g. "Jan 2022 – Present", "2019 – 2021")
 - gpa: use the exact string from the resume including label if present (e.g. "CGPA: 8.4/10", "3.8/4.0") -- empty string if not stated
-- linkedin / github: include the full URL with https:// prefix
+- linkedin / github / portfolio: include the full URL with https:// prefix
 
 Return ONLY this JSON (all fields required):
 {
@@ -278,6 +360,7 @@ Return ONLY this JSON (all fields required):
   "location": "",
   "linkedin": "",
   "github": "",
+  "portfolio": "",
   "summary": "",
   "experience": [
     {

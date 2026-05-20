@@ -18,37 +18,75 @@ import { cn } from "@/lib/utils";
 /* ─── Types (matching the AI response schema) ─────────────────────────── */
 
 export interface TailoredResume {
-  name: string;
-  contact: {
-    email: string;
-    phone: string;
-    linkedin: string;
-    github: string;
-    location: string;
-  };
-  summary: string;
-  experience: Array<{
-    company: string;
-    title: string;
-    dates: string;
-    location: string;
-    bullets: string[];
-  }>;
-  skills: Array<{ category: string; items: string[] }>;
-  projects: Array<{
+  header: {
     name: string;
-    tech: string;
-    link: string;
-    bullets: string[];
+    title: string;
+    contact: {
+      phone: string;
+      email: string;
+      linkedin?: string;
+      github?: string;
+      portfolio?: string;
+      location: string;
+    };
+  };
+  professional_summary: string;
+  technical_skills: {
+    programming_languages?: string[];
+    frontend_and_frameworks?: string[];
+    backend_and_frameworks?: string[];
+    databases?: string[];
+    cloud_and_devops?: string[];
+    tools_and_platforms?: string[];
+    libraries_and_frameworks?: string[];
+    soft_skills?: string[];
+    other_skills?: string[];
+  };
+  professional_experience: Array<{
+    job_title: string;
+    company: string;
+    employment_type?: string;
+    location?: string;
+    duration: { start: string; end?: string };
+    responsibilities: string[];
+    achievements?: string[];
+    technologies_used?: string[];
+  }>;
+  projects: Array<{
+    title: string;
+    role?: string;
+    duration?: { start?: string; end?: string };
+    description?: string;
+    highlights?: string[];
+    technologies_used?: string[];
+    github_url?: string;
+    live_demo_url?: string;
   }>;
   education: Array<{
     degree: string;
+    field_of_study?: string;
     institution: string;
-    year: string;
-    gpa: string;
+    location?: string;
+    graduation_date?: string;
+    gpa?: string;
+    percentage?: string;
   }>;
-  certifications: string[];
-  awards?: string[];
+  certifications?: Array<{
+    name: string;
+    issuer?: string;
+    issue_date?: string;
+    credential_id?: string;
+    credential_url?: string;
+  }>;
+  achievements?: string[];
+  publications?: Array<{
+    title: string;
+    publisher?: string;
+    publication_date?: string;
+    url?: string;
+  }>;
+  languages?: Array<{ language: string; proficiency?: string }>;
+  interests?: string[];
 }
 
 export interface TailoringResult {
@@ -87,6 +125,11 @@ async function downloadPDF(r: TailoredResume, companyName?: string) {
   const contentW = pageW - margin * 2;
   let y = margin;
 
+  // Blue accent: #1565C0
+  const BLUE: [number, number, number] = [21, 101, 192];
+  const GRAY: [number, number, number] = [100, 100, 100];
+  const BLACK: [number, number, number] = [0, 0, 0];
+
   const ensureSpace = (need: number) => {
     if (y + need > pageH - margin) {
       pdf.addPage();
@@ -94,150 +137,128 @@ async function downloadPDF(r: TailoredResume, companyName?: string) {
     }
   };
 
-  const addText = (
-    text: string,
-    opts: {
-      bold?: boolean;
-      italic?: boolean;
-      size?: number;
-      color?: number;
-      x?: number;
-    } = {},
-  ) => {
-    const {
-      bold = false,
-      italic = false,
-      size = 10,
-      color = 0,
-      x = margin,
-    } = opts;
-    pdf.setFont(
-      "helvetica",
-      bold && italic
-        ? "bolditalic"
-        : bold
-          ? "bold"
-          : italic
-            ? "italic"
-            : "normal",
-    );
-    pdf.setFontSize(size);
-    pdf.setTextColor(color, color, color);
-    const lines = pdf.splitTextToSize(text, contentW - (x - margin));
-    lines.forEach((line: string) => {
-      ensureSpace(size * 0.4 + 1);
-      pdf.text(line, x, y);
-      y += size * 0.4 + 1;
-    });
-    pdf.setTextColor(0, 0, 0);
-  };
+  const setColor = (rgb: [number, number, number]) =>
+    pdf.setTextColor(rgb[0], rgb[1], rgb[2]);
 
-  const addRightText = (text: string, baseY: number, size = 9, color = 100) => {
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(size);
-    pdf.setTextColor(color, color, color);
-    const w = pdf.getTextWidth(text);
-    pdf.text(text, pageW - margin - w, baseY);
-    pdf.setTextColor(0, 0, 0);
-  };
-
+  // Section heading: centered UPPERCASE blue text flanked by horizontal lines
   const addSection = (title: string) => {
-    ensureSpace(10);
-    y += 2;
+    ensureSpace(12);
+    y += 3;
+    const label = title.toUpperCase();
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(9);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(title.toUpperCase(), margin, y);
-    y += 1.5;
-    pdf.setDrawColor(0);
-    pdf.setLineWidth(0.25);
-    pdf.line(margin, y, pageW - margin, y);
-    y += 3.5;
+    pdf.setFontSize(9.5);
+    setColor(BLUE);
+    const textW = pdf.getTextWidth(label);
+    const textX = (pageW - textW) / 2;
+    pdf.text(label, textX, y);
+    // flanking lines at same y
+    pdf.setDrawColor(BLUE[0], BLUE[1], BLUE[2]);
+    pdf.setLineWidth(0.3);
+    const lineY = y - 1.2;
+    pdf.line(margin, lineY, textX - 3, lineY);
+    pdf.line(textX + textW + 3, lineY, pageW - margin, lineY);
+    setColor(BLACK);
+    y += 4;
   };
 
-  // ── Name ──
+  // ── Header: Name ──
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(18);
-  const nameW = pdf.getTextWidth(r.name ?? "");
-  pdf.text(r.name ?? "", (pageW - nameW) / 2, y);
-  y += 8;
+  setColor(BLACK);
+  const name = (r.header?.name ?? "").toUpperCase();
+  const nameW = pdf.getTextWidth(name);
+  pdf.text(name, (pageW - nameW) / 2, y);
+  y += 7;
 
-  // ── Contact ──
+  // ── Job Title ──
+  if (r.header?.title) {
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10.5);
+    setColor(GRAY);
+    const titleW = pdf.getTextWidth(r.header.title);
+    pdf.text(r.header.title, (pageW - titleW) / 2, y);
+    y += 5.5;
+  }
+
+  // ── Contact (pipe-separated, centered) ──
+  const c = r.header?.contact;
   const contactParts = [
-    r.contact?.email,
-    r.contact?.phone,
-    r.contact?.location,
-    r.contact?.linkedin,
-    r.contact?.github,
+    c?.email,
+    c?.phone,
+    c?.location,
+    c?.linkedin,
+    c?.github,
+    c?.portfolio,
   ].filter(Boolean) as string[];
   if (contactParts.length > 0) {
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8.5);
-    pdf.setTextColor(80, 80, 80);
-    const contactStr = contactParts.join("  ·  ");
+    setColor(GRAY);
+    const contactStr = contactParts.join("  |  ");
     const cLines = pdf.splitTextToSize(contactStr, contentW);
     cLines.forEach((line: string) => {
       const lw = pdf.getTextWidth(line);
       pdf.text(line, (pageW - lw) / 2, y);
       y += 4.5;
     });
-    pdf.setTextColor(0, 0, 0);
+    setColor(BLACK);
     y += 1;
   }
 
   // ── Summary ──
-  if (r.summary) {
+  if (r.professional_summary) {
     addSection("Professional Summary");
-    addText(r.summary, { size: 10 });
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9.5);
+    setColor(BLACK);
+    const summaryLines = pdf.splitTextToSize(r.professional_summary, contentW);
+    summaryLines.forEach((line: string) => {
+      ensureSpace(5);
+      pdf.text(line, margin, y);
+      y += 4.5;
+    });
     y += 1;
   }
 
-  // ── Experience ──
-  if ((r.experience ?? []).length > 0) {
-    addSection("Experience");
-    for (const exp of r.experience ?? []) {
-      ensureSpace(12);
-      const rowY = y;
-      addText(exp.company, { bold: true, size: 11 });
-      addRightText(exp.dates, rowY, 9, 100);
-      addText(`${exp.title}${exp.location ? " — " + exp.location : ""}`, {
-        italic: true,
-        size: 10,
-      });
-      for (const bullet of exp.bullets ?? []) {
-        const bulletLines = pdf.splitTextToSize(bullet, contentW - 5);
-        bulletLines.forEach((line: string, i: number) => {
-          ensureSpace(5);
-          pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(10);
-          pdf.text(i === 0 ? "•" : " ", margin, y);
-          pdf.text(line, margin + 4, y);
-          y += 4.5;
-        });
-      }
-      y += 2;
-    }
-  }
+  // ── Technical Skills ──
+  const SKILL_LABELS: Record<string, string> = {
+    programming_languages: "Programming Languages",
+    frontend_and_frameworks: "Frontend & Frameworks",
+    backend_and_frameworks: "Backend & Frameworks",
+    databases: "Databases",
+    cloud_and_devops: "Cloud & DevOps",
+    tools_and_platforms: "Tools & Platforms",
+    libraries_and_frameworks: "Libraries & Frameworks",
+    soft_skills: "Soft Skills",
+    other_skills: "Other Skills",
+  };
+  const ts = r.technical_skills ?? {};
+  const skillEntries = Object.entries(SKILL_LABELS)
+    .map(([key, label]) => ({
+      label,
+      items: (ts as Record<string, string[]>)[key] ?? [],
+    }))
+    .filter((e) => e.items.length > 0);
 
-  // ── Skills ──
-  if ((r.skills ?? []).length > 0) {
-    addSection("Skills");
-    for (const s of r.skills ?? []) {
+  if (skillEntries.length > 0) {
+    addSection("Technical Skills");
+    for (const { label, items } of skillEntries) {
       ensureSpace(6);
-      const label = `${s.category}: `;
+      const boldLabel = `${label}: `;
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(10);
-      const labelW = pdf.getTextWidth(label);
-      pdf.text(label, margin, y);
+      pdf.setFontSize(9.5);
+      setColor(BLACK);
+      const labelW = pdf.getTextWidth(boldLabel);
+      pdf.text(boldLabel, margin, y);
       pdf.setFont("helvetica", "normal");
-      const itemsStr = (s.items ?? []).join(", ");
-      const itemLines = pdf.splitTextToSize(itemsStr, contentW - labelW);
+      const itemStr = items.join(", ");
+      const itemLines = pdf.splitTextToSize(itemStr, contentW - labelW);
       itemLines.forEach((line: string, i: number) => {
+        ensureSpace(5);
         if (i === 0) {
           pdf.text(line, margin + labelW, y);
           y += 4.5;
         } else {
-          ensureSpace(5);
           pdf.text(line, margin + labelW, y);
           y += 4.5;
         }
@@ -246,20 +267,184 @@ async function downloadPDF(r: TailoredResume, companyName?: string) {
     y += 1;
   }
 
+  // ── Professional Experience ──
+  if ((r.professional_experience ?? []).length > 0) {
+    addSection("Professional Experience");
+    for (const exp of r.professional_experience ?? []) {
+      ensureSpace(14);
+      const rowY = y;
+      const dates = [exp.duration?.start, exp.duration?.end]
+        .filter(Boolean)
+        .join(" – ");
+
+      // Line 1: Job Title (bold left) + Dates (gray right)
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      setColor(BLACK);
+      pdf.text(exp.job_title ?? "", margin, rowY);
+      if (dates) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        setColor(GRAY);
+        const dw = pdf.getTextWidth(dates);
+        pdf.text(dates, pageW - margin - dw, rowY);
+      }
+      y = rowY + 5;
+
+      // Line 2: Company (blue bold left) + Location (right)
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      setColor(BLUE);
+      pdf.text(exp.company ?? "", margin, y);
+      if (exp.location) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        setColor(GRAY);
+        const lw = pdf.getTextWidth(exp.location);
+        pdf.text(exp.location, pageW - margin - lw, y);
+      }
+      y += 5;
+      setColor(BLACK);
+
+      // Responsibilities (bullets)
+      for (const bullet of exp.responsibilities ?? []) {
+        const bulletLines = pdf.splitTextToSize(bullet, contentW - 5);
+        bulletLines.forEach((line: string, i: number) => {
+          ensureSpace(5);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9.5);
+          setColor(BLACK);
+          if (i === 0) pdf.text("•", margin, y);
+          pdf.text(line, margin + 4, y);
+          y += 4.5;
+        });
+      }
+
+      // Achievements (bullets, within experience)
+      for (const ach of exp.achievements ?? []) {
+        const achLines = pdf.splitTextToSize(ach, contentW - 5);
+        achLines.forEach((line: string, i: number) => {
+          ensureSpace(5);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9.5);
+          setColor(BLACK);
+          if (i === 0) pdf.text("•", margin, y);
+          pdf.text(line, margin + 4, y);
+          y += 4.5;
+        });
+      }
+
+      // Technologies Used (italic gray, bottom of entry)
+      if ((exp.technologies_used ?? []).filter(Boolean).length > 0) {
+        ensureSpace(5);
+        pdf.setFont("helvetica", "italic");
+        pdf.setFontSize(8.5);
+        setColor(GRAY);
+        const techStr = `Technologies Used: ${exp.technologies_used!.filter(Boolean).join(", ")}`;
+        const techLines = pdf.splitTextToSize(techStr, contentW);
+        techLines.forEach((line: string) => {
+          ensureSpace(5);
+          pdf.text(line, margin, y);
+          y += 4;
+        });
+        setColor(BLACK);
+      }
+      y += 2;
+    }
+  }
+
   // ── Projects ──
   if ((r.projects ?? []).length > 0) {
     addSection("Projects");
     for (const p of r.projects ?? []) {
-      ensureSpace(10);
-      addText(p.name, { bold: true, size: 11 });
-      if (p.tech) addText(p.tech, { size: 9, color: 100 });
-      for (const b of p.bullets ?? []) {
-        const bulletLines = pdf.splitTextToSize(b, contentW - 5);
-        bulletLines.forEach((line: string, i: number) => {
+      ensureSpace(12);
+      const rowY = y;
+      const pdates = [p.duration?.start, p.duration?.end]
+        .filter(Boolean)
+        .join(" – ");
+
+      // Line 1: Project Name (bold left) + Dates (right)
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
+      setColor(BLACK);
+      pdf.text(p.title ?? "", margin, rowY);
+      if (pdates) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9);
+        setColor(GRAY);
+        const dw = pdf.getTextWidth(pdates);
+        pdf.text(pdates, pageW - margin - dw, rowY);
+      }
+      y = rowY + 5;
+      setColor(BLACK);
+
+      // Role (italic gray)
+      if (p.role) {
+        ensureSpace(5);
+        pdf.setFont("helvetica", "italic");
+        pdf.setFontSize(9);
+        setColor(GRAY);
+        pdf.text(p.role, margin, y);
+        y += 4.5;
+        setColor(BLACK);
+      }
+
+      // Description
+      if (p.description) {
+        const descLines = pdf.splitTextToSize(p.description, contentW);
+        descLines.forEach((line: string) => {
           ensureSpace(5);
           pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(10);
-          pdf.text(i === 0 ? "•" : " ", margin, y);
+          pdf.setFontSize(9.5);
+          setColor(BLACK);
+          pdf.text(line, margin, y);
+          y += 4.5;
+        });
+      }
+
+      // Tech (italic gray)
+      if ((p.technologies_used ?? []).filter(Boolean).length > 0) {
+        pdf.setFont("helvetica", "italic");
+        pdf.setFontSize(8.5);
+        setColor(GRAY);
+        const techStr = p.technologies_used!.filter(Boolean).join(", ");
+        const techLines = pdf.splitTextToSize(techStr, contentW);
+        techLines.forEach((line: string) => {
+          ensureSpace(5);
+          pdf.text(line, margin, y);
+          y += 4;
+        });
+        setColor(BLACK);
+      }
+
+      // GitHub & Live Demo URLs
+      if (p.github_url || p.live_demo_url) {
+        ensureSpace(5);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8.5);
+        setColor(BLUE);
+        const urlParts: string[] = [];
+        if (p.github_url) urlParts.push(`GitHub: ${p.github_url}`);
+        if (p.live_demo_url) urlParts.push(`Live Demo: ${p.live_demo_url}`);
+        const urlStr = urlParts.join("  |  ");
+        const urlLines = pdf.splitTextToSize(urlStr, contentW);
+        urlLines.forEach((line: string) => {
+          ensureSpace(5);
+          pdf.text(line, margin, y);
+          y += 4;
+        });
+        setColor(BLACK);
+      }
+
+      // Highlights (bullets)
+      for (const h of p.highlights ?? []) {
+        const hLines = pdf.splitTextToSize(h, contentW - 5);
+        hLines.forEach((line: string, i: number) => {
+          ensureSpace(5);
+          pdf.setFont("helvetica", "normal");
+          pdf.setFontSize(9.5);
+          setColor(BLACK);
+          if (i === 0) pdf.text("•", margin, y);
           pdf.text(line, margin + 4, y);
           y += 4.5;
         });
@@ -272,39 +457,122 @@ async function downloadPDF(r: TailoredResume, companyName?: string) {
   if ((r.education ?? []).length > 0) {
     addSection("Education");
     for (const e of r.education ?? []) {
-      ensureSpace(10);
-      const rowY = y;
-      addText(e.institution, { bold: true, size: 11 });
-      addRightText(`${e.year}${e.gpa ? " · " + e.gpa : ""}`, rowY, 9, 100);
-      addText(e.degree, { italic: true, size: 10 });
-      y += 2;
+      ensureSpace(7);
+      const parts = [
+        e.degree + (e.field_of_study ? `, ${e.field_of_study}` : ""),
+        e.graduation_date,
+        e.institution,
+        e.gpa ? `GPA: ${e.gpa}` : "",
+        e.percentage || "",
+      ].filter(Boolean);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9.5);
+      setColor(BLACK);
+      const line = parts.join("  |  ");
+      const eLines = pdf.splitTextToSize(line, contentW);
+      eLines.forEach((l: string) => {
+        ensureSpace(5);
+        pdf.text(l, margin, y);
+        y += 4.5;
+      });
+      y += 1;
     }
   }
 
   // ── Certifications ──
   if ((r.certifications ?? []).length > 0) {
     addSection("Certifications");
-    addText((r.certifications ?? []).join("  ·  "), { size: 10 });
-  }
-
-  // ── Awards & Recognition ──
-  if ((r.awards ?? []).length > 0) {
-    addSection("Awards & Recognition");
-    for (const award of r.awards ?? []) {
-      ensureSpace(6);
-      pdf.setFont("helvetica", "normal");
-      pdf.setFontSize(10);
-      pdf.text("•", margin, y);
-      const aLines = pdf.splitTextToSize(award, contentW - 4);
-      aLines.forEach((line: string) => {
+    for (const cert of r.certifications ?? []) {
+      const certParts = [cert.name, cert.issuer, cert.issue_date]
+        .filter(Boolean)
+        .join("  |  ");
+      const certLines = pdf.splitTextToSize(certParts, contentW - 5);
+      certLines.forEach((line: string, i: number) => {
         ensureSpace(5);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9.5);
+        setColor(BLACK);
+        if (i === 0) pdf.text("•", margin, y);
         pdf.text(line, margin + 4, y);
         y += 4.5;
       });
     }
   }
 
-  const safeName = (r.name ?? "Resume").replace(/\s+/g, "_");
+  // ── Achievements ──
+  if ((r.achievements ?? []).filter(Boolean).length > 0) {
+    addSection("Achievements");
+    for (const a of r.achievements ?? []) {
+      const aLines = pdf.splitTextToSize(a, contentW - 5);
+      aLines.forEach((line: string, i: number) => {
+        ensureSpace(5);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9.5);
+        setColor(BLACK);
+        if (i === 0) pdf.text("•", margin, y);
+        pdf.text(line, margin + 4, y);
+        y += 4.5;
+      });
+    }
+  }
+
+  // ── Publications ──
+  if ((r.publications ?? []).filter((p) => p.title).length > 0) {
+    addSection("Publications");
+    for (const pub of r.publications ?? []) {
+      const pubParts = [pub.title, pub.publisher, pub.publication_date]
+        .filter(Boolean)
+        .join("  |  ");
+      const pubLines = pdf.splitTextToSize(pubParts, contentW - 5);
+      pubLines.forEach((line: string, i: number) => {
+        ensureSpace(5);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(9.5);
+        setColor(BLACK);
+        if (i === 0) pdf.text("•", margin, y);
+        pdf.text(line, margin + 4, y);
+        y += 4.5;
+      });
+    }
+  }
+
+  // ── Languages ──
+  if ((r.languages ?? []).filter((l) => l.language).length > 0) {
+    addSection("Languages");
+    ensureSpace(6);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9.5);
+    setColor(BLACK);
+    const langStr = (r.languages ?? [])
+      .map((l) =>
+        l.proficiency ? `${l.language} (${l.proficiency})` : l.language,
+      )
+      .join("  |  ");
+    const langLines = pdf.splitTextToSize(langStr, contentW);
+    langLines.forEach((l: string) => {
+      ensureSpace(5);
+      pdf.text(l, margin, y);
+      y += 4.5;
+    });
+  }
+
+  // ── Interests ──
+  if ((r.interests ?? []).filter(Boolean).length > 0) {
+    addSection("Interests");
+    ensureSpace(6);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9.5);
+    setColor(BLACK);
+    const intStr = (r.interests ?? []).join("  |  ");
+    const intLines = pdf.splitTextToSize(intStr, contentW);
+    intLines.forEach((l: string) => {
+      ensureSpace(5);
+      pdf.text(l, margin, y);
+      y += 4.5;
+    });
+  }
+
+  const safeName = (r.header?.name ?? "Resume").replace(/\s+/g, "_");
   const safeCompany = companyName
     ? "_" + companyName.replace(/[\s/\\:*?"<>|]+/g, "_")
     : "";
@@ -316,43 +584,15 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
     Document,
     Paragraph,
     TextRun,
-    HeadingLevel,
     AlignmentType,
     Packer,
-    UnderlineType,
+    TabStopType,
+    TabStopLeader,
   } = await import("docx");
 
+  const BLUE = "1565C0";
+  const GRAY = "646464";
   const children: InstanceType<typeof Paragraph>[] = [];
-
-  // Name
-  children.push(
-    new Paragraph({
-      children: [new TextRun({ text: r.name ?? "", bold: true, size: 36 })],
-      alignment: AlignmentType.CENTER,
-    }),
-  );
-
-  // Contact
-  const contactLine = [
-    r.contact?.email,
-    r.contact?.phone,
-    r.contact?.location,
-    r.contact?.linkedin,
-    r.contact?.github,
-  ]
-    .filter(Boolean)
-    .join("  ·  ");
-  if (contactLine) {
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({ text: contactLine, size: 18, color: "555555" }),
-        ],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 200 },
-      }),
-    );
-  }
 
   const sectionHeading = (text: string) =>
     new Paragraph({
@@ -360,33 +600,134 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
         new TextRun({
           text: text.toUpperCase(),
           bold: true,
-          size: 22,
-          underline: { type: UnderlineType.SINGLE },
+          size: 20,
+          color: BLUE,
         }),
       ],
-      spacing: { before: 240, after: 100 },
+      alignment: AlignmentType.CENTER,
+      border: {
+        top: { color: BLUE, size: 6, space: 4, style: "single" },
+        bottom: { color: BLUE, size: 6, space: 4, style: "single" },
+      },
+      spacing: { before: 240, after: 80 },
     });
 
-  // Summary
-  if (r.summary) {
+  // ── Name ──
+  children.push(
+    new Paragraph({
+      children: [
+        new TextRun({
+          text: (r.header?.name ?? "").toUpperCase(),
+          bold: true,
+          size: 36,
+        }),
+      ],
+      alignment: AlignmentType.CENTER,
+    }),
+  );
+
+  // ── Title ──
+  if (r.header?.title) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: r.header.title, size: 22, color: GRAY }),
+        ],
+        alignment: AlignmentType.CENTER,
+      }),
+    );
+  }
+
+  // ── Contact ──
+  const c = r.header?.contact;
+  const contactParts = [
+    c?.email,
+    c?.phone,
+    c?.location,
+    c?.linkedin,
+    c?.github,
+    c?.portfolio,
+  ].filter(Boolean) as string[];
+  if (contactParts.length > 0) {
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: contactParts.join("  |  "),
+            size: 18,
+            color: GRAY,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 160 },
+      }),
+    );
+  }
+
+  // ── Summary ──
+  if (r.professional_summary) {
     children.push(sectionHeading("Professional Summary"));
     children.push(
       new Paragraph({
-        children: [new TextRun({ text: r.summary, size: 20 })],
+        children: [new TextRun({ text: r.professional_summary, size: 20 })],
         spacing: { after: 100 },
       }),
     );
   }
 
-  // Experience
-  if ((r.experience ?? []).length > 0) {
-    children.push(sectionHeading("Experience"));
-    for (const exp of r.experience ?? []) {
+  // ── Technical Skills ──
+  const SKILL_LABELS: Record<string, string> = {
+    programming_languages: "Programming Languages",
+    frontend_and_frameworks: "Frontend & Frameworks",
+    backend_and_frameworks: "Backend & Frameworks",
+    databases: "Databases",
+    cloud_and_devops: "Cloud & DevOps",
+    tools_and_platforms: "Tools & Platforms",
+    libraries_and_frameworks: "Libraries & Frameworks",
+    soft_skills: "Soft Skills",
+    other_skills: "Other Skills",
+  };
+  const ts = r.technical_skills ?? {};
+  const skillEntries = Object.entries(SKILL_LABELS)
+    .map(([key, label]) => ({
+      label,
+      items: (ts as Record<string, string[]>)[key] ?? [],
+    }))
+    .filter((e) => e.items.length > 0);
+  if (skillEntries.length > 0) {
+    children.push(sectionHeading("Technical Skills"));
+    for (const { label, items } of skillEntries) {
       children.push(
         new Paragraph({
           children: [
-            new TextRun({ text: exp.company, bold: true, size: 22 }),
-            new TextRun({ text: `  ${exp.dates}`, size: 18, color: "666666" }),
+            new TextRun({ text: `${label}: `, bold: true, size: 20 }),
+            new TextRun({ text: items.join(", "), size: 20 }),
+          ],
+          spacing: { after: 60 },
+        }),
+      );
+    }
+  }
+
+  // ── Experience ──
+  if ((r.professional_experience ?? []).length > 0) {
+    children.push(sectionHeading("Professional Experience"));
+    for (const exp of r.professional_experience ?? []) {
+      const dates = [exp.duration?.start, exp.duration?.end]
+        .filter(Boolean)
+        .join(" \u2013 ");
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: exp.job_title ?? "", bold: true, size: 22 }),
+            new TextRun({ text: `\t${dates}`, size: 18, color: GRAY }),
+          ],
+          tabStops: [
+            {
+              type: TabStopType.RIGHT,
+              position: 9360,
+              leader: TabStopLeader.NONE,
+            },
           ],
         }),
       );
@@ -394,71 +735,150 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
         new Paragraph({
           children: [
             new TextRun({
-              text: `${exp.title}${exp.location ? " — " + exp.location : ""}`,
-              italics: true,
+              text: exp.company ?? "",
+              bold: true,
               size: 20,
+              color: BLUE,
             }),
+            exp.location
+              ? new TextRun({
+                  text: `\t${exp.location}`,
+                  size: 18,
+                  color: GRAY,
+                })
+              : new TextRun(""),
+          ],
+          tabStops: [
+            {
+              type: TabStopType.RIGHT,
+              position: 9360,
+              leader: TabStopLeader.NONE,
+            },
           ],
           spacing: { after: 60 },
         }),
       );
-      for (const bullet of exp.bullets ?? []) {
+      for (const resp of exp.responsibilities ?? []) {
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: bullet, size: 20 })],
+            children: [new TextRun({ text: resp, size: 20 })],
             bullet: { level: 0 },
             spacing: { after: 40 },
+          }),
+        );
+      }
+      if ((exp.achievements ?? []).filter(Boolean).length > 0) {
+        for (const ach of exp.achievements ?? []) {
+          children.push(
+            new Paragraph({
+              children: [new TextRun({ text: ach, size: 20 })],
+              bullet: { level: 0 },
+              spacing: { after: 40 },
+            }),
+          );
+        }
+      }
+      if ((exp.technologies_used ?? []).filter(Boolean).length > 0) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `Technologies Used: ${exp.technologies_used!.filter(Boolean).join(", ")}`,
+                size: 18,
+                italics: true,
+                color: GRAY,
+              }),
+            ],
+            spacing: { after: 80 },
           }),
         );
       }
     }
   }
 
-  // Skills
-  if ((r.skills ?? []).length > 0) {
-    children.push(sectionHeading("Skills"));
-    for (const s of r.skills ?? []) {
-      children.push(
-        new Paragraph({
-          children: [
-            new TextRun({ text: `${s.category}: `, bold: true, size: 20 }),
-            new TextRun({ text: (s.items ?? []).join(", "), size: 20 }),
-          ],
-          spacing: { after: 60 },
-        }),
-      );
-    }
-  }
-
-  // Projects
+  // ── Projects ──
   if ((r.projects ?? []).length > 0) {
     children.push(sectionHeading("Projects"));
     for (const p of r.projects ?? []) {
+      const pdates = [p.duration?.start, p.duration?.end]
+        .filter(Boolean)
+        .join(" \u2013 ");
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: p.name, bold: true, size: 22 })],
-          spacing: { after: 40 },
+          children: [
+            new TextRun({ text: p.title ?? "", bold: true, size: 22 }),
+            pdates
+              ? new TextRun({ text: `\t${pdates}`, size: 18, color: GRAY })
+              : new TextRun(""),
+          ],
+          tabStops: [
+            {
+              type: TabStopType.RIGHT,
+              position: 9360,
+              leader: TabStopLeader.NONE,
+            },
+          ],
         }),
       );
-      if (p.tech) {
+      if (p.role) {
         children.push(
           new Paragraph({
             children: [
               new TextRun({
-                text: p.tech,
+                text: p.role,
                 size: 18,
-                color: "666666",
                 italics: true,
+                color: GRAY,
+              }),
+            ],
+            spacing: { after: 40 },
+          }),
+        );
+      }
+      if (p.description) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: p.description, size: 20 })],
+            spacing: { after: 60 },
+          }),
+        );
+      }
+      if ((p.technologies_used ?? []).filter(Boolean).length > 0) {
+        children.push(
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: p.technologies_used!.filter(Boolean).join(", "),
+                size: 18,
+                italics: true,
+                color: GRAY,
               }),
             ],
             spacing: { after: 60 },
           }),
         );
       }
-      for (const b of p.bullets ?? []) {
+      if (p.github_url || p.live_demo_url) {
+        const urlParts: string[] = [];
+        if (p.github_url) urlParts.push(`GitHub: ${p.github_url}`);
+        if (p.live_demo_url) urlParts.push(`Live Demo: ${p.live_demo_url}`);
         children.push(
           new Paragraph({
-            children: [new TextRun({ text: b, size: 20 })],
+            children: [
+              new TextRun({
+                text: urlParts.join("  |  "),
+                size: 18,
+                color: BLUE,
+              }),
+            ],
+            spacing: { after: 40 },
+          }),
+        );
+      }
+      for (const h of p.highlights ?? []) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: h, size: 20 })],
             bullet: { level: 0 },
             spacing: { after: 40 },
           }),
@@ -467,53 +887,36 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
     }
   }
 
-  // Education
+  // ── Education ──
   if ((r.education ?? []).length > 0) {
     children.push(sectionHeading("Education"));
     for (const e of r.education ?? []) {
+      const parts = [
+        e.degree + (e.field_of_study ? `, ${e.field_of_study}` : ""),
+        e.graduation_date,
+        e.institution,
+        e.gpa ? `GPA: ${e.gpa}` : "",
+        e.percentage || "",
+      ].filter(Boolean);
       children.push(
         new Paragraph({
-          children: [
-            new TextRun({ text: e.institution, bold: true, size: 22 }),
-            new TextRun({
-              text: `  ${e.year}${e.gpa ? " · " + e.gpa : ""}`,
-              size: 18,
-              color: "666666",
-            }),
-          ],
-        }),
-      );
-      children.push(
-        new Paragraph({
-          children: [new TextRun({ text: e.degree, italics: true, size: 20 })],
+          children: [new TextRun({ text: parts.join("  |  "), size: 20 })],
           spacing: { after: 80 },
         }),
       );
     }
   }
 
-  // Certifications
+  // ── Certifications ──
   if ((r.certifications ?? []).length > 0) {
     children.push(sectionHeading("Certifications"));
-    children.push(
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: (r.certifications ?? []).join("  ·  "),
-            size: 20,
-          }),
-        ],
-      }),
-    );
-  }
-
-  // Awards & Recognition
-  if ((r.awards ?? []).length > 0) {
-    children.push(sectionHeading("Awards & Recognition"));
-    for (const award of r.awards ?? []) {
+    for (const cert of r.certifications ?? []) {
+      const certParts = [cert.name, cert.issuer, cert.issue_date]
+        .filter(Boolean)
+        .join("  |  ");
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: award, size: 20 })],
+          children: [new TextRun({ text: certParts, size: 20 })],
           bullet: { level: 0 },
           spacing: { after: 40 },
         }),
@@ -521,12 +924,72 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
     }
   }
 
+  // ── Achievements ──
+  if ((r.achievements ?? []).filter(Boolean).length > 0) {
+    children.push(sectionHeading("Achievements"));
+    for (const a of r.achievements ?? []) {
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: a, size: 20 })],
+          bullet: { level: 0 },
+          spacing: { after: 40 },
+        }),
+      );
+    }
+  }
+
+  // ── Publications ──
+  if ((r.publications ?? []).filter((p) => p.title).length > 0) {
+    children.push(sectionHeading("Publications"));
+    for (const pub of r.publications ?? []) {
+      const pubParts = [pub.title, pub.publisher, pub.publication_date]
+        .filter(Boolean)
+        .join("  |  ");
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: pubParts, size: 20 })],
+          bullet: { level: 0 },
+          spacing: { after: 40 },
+        }),
+      );
+    }
+  }
+
+  // ── Languages ──
+  if ((r.languages ?? []).filter((l) => l.language).length > 0) {
+    children.push(sectionHeading("Languages"));
+    const langStr = (r.languages ?? [])
+      .map((l) =>
+        l.proficiency ? `${l.language} (${l.proficiency})` : l.language,
+      )
+      .join("  |  ");
+    children.push(
+      new Paragraph({
+        children: [new TextRun({ text: langStr, size: 20 })],
+        spacing: { after: 80 },
+      }),
+    );
+  }
+
+  // ── Interests ──
+  if ((r.interests ?? []).filter(Boolean).length > 0) {
+    children.push(sectionHeading("Interests"));
+    children.push(
+      new Paragraph({
+        children: [
+          new TextRun({ text: (r.interests ?? []).join("  |  "), size: 20 }),
+        ],
+        spacing: { after: 80 },
+      }),
+    );
+  }
+
   const doc = new Document({ sections: [{ children }] });
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  const safeName = (r.name ?? "resume").replace(/\s+/g, "_");
+  const safeName = (r.header?.name ?? "resume").replace(/\s+/g, "_");
   const safeCompany = companyName
     ? "_" + companyName.replace(/[\s/\\:*?"<>|]+/g, "_")
     : "";
@@ -582,7 +1045,7 @@ export function TailoringDashboard({ result }: { result: TailoringResult }) {
         >
           <p className="label-sm text-muted-foreground">CANDIDATE</p>
           <h2 className="mt-2 font-display text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-            {resume.name ?? "Your Resume"}
+            {resume.header?.name ?? "Your Resume"}
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             {highCount > 0
@@ -819,87 +1282,136 @@ export function TailoringDashboard({ result }: { result: TailoringResult }) {
 /* ─────────────────────────────────────── ResumePreview sub-component ── */
 
 function ResumePreview({ resume }: { resume: TailoredResume }) {
-  const contact = [
-    resume.contact?.email,
-    resume.contact?.phone,
-    resume.contact?.location,
-    resume.contact?.linkedin,
-    resume.contact?.github,
-  ]
-    .filter(Boolean)
-    .join("  ·  ");
+  const c = resume.header?.contact;
+  const contactParts = [
+    c?.email,
+    c?.phone,
+    c?.location,
+    c?.linkedin,
+    c?.github,
+    c?.portfolio,
+  ].filter(Boolean) as string[];
+
+  const SKILL_LABELS: Record<string, string> = {
+    programming_languages: "Programming Languages",
+    frontend_and_frameworks: "Frontend & Frameworks",
+    backend_and_frameworks: "Backend & Frameworks",
+    databases: "Databases",
+    cloud_and_devops: "Cloud & DevOps",
+    tools_and_platforms: "Tools & Platforms",
+    libraries_and_frameworks: "Libraries & Frameworks",
+    soft_skills: "Soft Skills",
+    other_skills: "Other Skills",
+  };
+  const ts = resume.technical_skills ?? {};
+  const skillEntries = Object.entries(SKILL_LABELS)
+    .map(([key, label]) => ({
+      label,
+      items: (ts as Record<string, string[]>)[key] ?? [],
+    }))
+    .filter((e) => e.items.length > 0);
 
   return (
     <div className="bg-surface-lowest p-6 sm:p-10">
-      {/* Name + contact */}
-      <div className="border-b border-surface-highest pb-5 text-center">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {resume.name}
+      {/* Header */}
+      <div className="pb-5 text-center">
+        <h1 className="font-display text-2xl font-bold uppercase tracking-tight text-foreground sm:text-3xl">
+          {resume.header?.name}
         </h1>
-        {contact && (
+        {resume.header?.title && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {resume.header.title}
+          </p>
+        )}
+        {contactParts.length > 0 && (
           <p className="mt-1 text-xs text-muted-foreground wrap-break-word">
-            {contact}
+            {contactParts.join("  |  ")}
           </p>
         )}
       </div>
 
       {/* Summary */}
-      {resume.summary && (
+      {resume.professional_summary && (
         <ResumeSection title="Professional Summary">
           <p className="text-sm leading-7 text-foreground/80">
-            {resume.summary}
+            {resume.professional_summary}
           </p>
         </ResumeSection>
       )}
 
-      {/* Experience */}
-      {(resume.experience ?? []).length > 0 && (
-        <ResumeSection title="Experience">
-          <div className="space-y-5">
-            {(resume.experience ?? []).map((exp, i) => (
-              <div key={i}>
-                <div className="flex flex-wrap items-baseline justify-between gap-x-2">
-                  <span className="font-semibold text-foreground">
-                    {exp.company}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {exp.dates}
-                  </span>
-                </div>
-                <p className="text-sm italic text-muted-foreground">
-                  {exp.title}
-                  {exp.location ? ` — ${exp.location}` : ""}
-                </p>
-                <ul className="mt-2 space-y-1.5 pl-4">
-                  {(exp.bullets ?? []).map((b, j) => (
-                    <li
-                      key={j}
-                      className="list-disc text-sm leading-6 text-foreground/80"
-                    >
-                      {b}
-                    </li>
-                  ))}
-                </ul>
+      {/* Technical Skills */}
+      {skillEntries.length > 0 && (
+        <ResumeSection title="Technical Skills">
+          <div className="space-y-1.5">
+            {skillEntries.map(({ label, items }, i) => (
+              <div key={i} className="flex flex-wrap gap-x-1 text-sm">
+                <span className="font-semibold text-foreground">{label}:</span>
+                <span className="text-foreground/80">{items.join(", ")}</span>
               </div>
             ))}
           </div>
         </ResumeSection>
       )}
 
-      {/* Skills */}
-      {(resume.skills ?? []).length > 0 && (
-        <ResumeSection title="Skills">
-          <div className="space-y-2">
-            {(resume.skills ?? []).map((s, i) => (
-              <div key={i} className="flex flex-wrap gap-x-1 text-sm">
-                <span className="font-semibold text-foreground">
-                  {s.category}:
-                </span>
-                <span className="text-foreground/80">
-                  {(s.items ?? []).join(", ")}
-                </span>
-              </div>
-            ))}
+      {/* Experience */}
+      {(resume.professional_experience ?? []).length > 0 && (
+        <ResumeSection title="Professional Experience">
+          <div className="space-y-5">
+            {(resume.professional_experience ?? []).map((exp, i) => {
+              const dates = [exp.duration?.start, exp.duration?.end]
+                .filter(Boolean)
+                .join(" – ");
+              return (
+                <div key={i}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                    <span className="font-semibold text-foreground">
+                      {exp.job_title}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {dates}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                    <span className="text-sm font-medium text-blue-700">
+                      {exp.company}
+                    </span>
+                    {exp.location && (
+                      <span className="text-xs text-muted-foreground">
+                        {exp.location}
+                      </span>
+                    )}
+                  </div>
+                  <ul className="mt-2 space-y-1.5 pl-4">
+                    {(exp.responsibilities ?? []).map((r, j) => (
+                      <li
+                        key={j}
+                        className="list-disc text-sm leading-6 text-foreground/80"
+                      >
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                  {(exp.technologies_used ?? []).filter(Boolean).length > 0 && (
+                    <p className="mt-1.5 text-xs italic text-muted-foreground">
+                      Technologies Used:{" "}
+                      {exp.technologies_used!.filter(Boolean).join(", ")}
+                    </p>
+                  )}
+                  {(exp.achievements ?? []).filter(Boolean).length > 0 && (
+                    <ul className="mt-1.5 space-y-1 pl-4">
+                      {(exp.achievements ?? []).map((a, j) => (
+                        <li
+                          key={j}
+                          className="list-disc text-sm leading-6 text-foreground/80"
+                        >
+                          {a}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </ResumeSection>
       )}
@@ -908,40 +1420,72 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
       {(resume.projects ?? []).length > 0 && (
         <ResumeSection title="Projects">
           <div className="space-y-4">
-            {(resume.projects ?? []).map((p, i) => (
-              <div key={i}>
-                <div>
-                  <span className="font-semibold text-foreground">
-                    {p.name}
-                  </span>
-                  {p.link && (
-                    <a
-                      href={p.link}
-                      className="ml-2 text-xs text-muted-foreground underline"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {p.link}
-                    </a>
-                  )}
-                  {p.tech && (
-                    <p className="text-xs text-muted-foreground italic mt-0.5">
-                      {p.tech}
+            {(resume.projects ?? []).map((p, i) => {
+              const pdates = [p.duration?.start, p.duration?.end]
+                .filter(Boolean)
+                .join(" – ");
+              return (
+                <div key={i}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                    <span className="font-semibold text-foreground">
+                      {p.title}
+                    </span>
+                    {pdates && (
+                      <span className="text-xs text-muted-foreground">
+                        {pdates}
+                      </span>
+                    )}
+                  </div>
+                  {p.role && (
+                    <p className="text-xs italic text-muted-foreground">
+                      {p.role}
                     </p>
                   )}
+                  {p.description && (
+                    <p className="mt-1 text-sm leading-6 text-foreground/80">
+                      {p.description}
+                    </p>
+                  )}
+                  {(p.technologies_used ?? []).filter(Boolean).length > 0 && (
+                    <p className="text-xs italic text-muted-foreground">
+                      {p.technologies_used!.filter(Boolean).join(", ")}
+                    </p>
+                  )}
+                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                    {p.github_url && (
+                      <a
+                        href={p.github_url}
+                        className="text-xs text-blue-600 underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        GitHub
+                      </a>
+                    )}
+                    {p.live_demo_url && (
+                      <a
+                        href={p.live_demo_url}
+                        className="text-xs text-blue-600 underline"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Live Demo
+                      </a>
+                    )}
+                  </div>
+                  <ul className="mt-1.5 space-y-1.5 pl-4">
+                    {(p.highlights ?? []).map((h, j) => (
+                      <li
+                        key={j}
+                        className="list-disc text-sm leading-6 text-foreground/80"
+                      >
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="mt-1.5 space-y-1.5 pl-4">
-                  {(p.bullets ?? []).map((b, j) => (
-                    <li
-                      key={j}
-                      className="list-disc text-sm leading-6 text-foreground/80"
-                    >
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </ResumeSection>
       )}
@@ -949,27 +1493,21 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
       {/* Education */}
       {(resume.education ?? []).length > 0 && (
         <ResumeSection title="Education">
-          <div className="space-y-3">
-            {(resume.education ?? []).map((e, i) => (
-              <div
-                key={i}
-                className="flex flex-wrap items-baseline justify-between gap-x-2"
-              >
-                <div>
-                  <span className="font-semibold text-foreground">
-                    {e.institution}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    {" "}
-                    — {e.degree}
-                  </span>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {e.year}
-                  {e.gpa ? ` · ${e.gpa}` : ""}
-                </span>
-              </div>
-            ))}
+          <div className="space-y-2">
+            {(resume.education ?? []).map((e, i) => {
+              const parts = [
+                e.degree + (e.field_of_study ? `, ${e.field_of_study}` : ""),
+                e.graduation_date,
+                e.institution,
+                e.gpa ? `GPA: ${e.gpa}` : "",
+                e.percentage || "",
+              ].filter(Boolean);
+              return (
+                <p key={i} className="text-sm text-foreground/80">
+                  {parts.join("  |  ")}
+                </p>
+              );
+            })}
           </div>
         </ResumeSection>
       )}
@@ -977,24 +1515,23 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
       {/* Certifications */}
       {(resume.certifications ?? []).length > 0 && (
         <ResumeSection title="Certifications">
-          <div className="flex flex-wrap gap-2">
-            {(resume.certifications ?? []).map((c, i) => (
-              <span
-                key={i}
-                className="bg-surface-low px-3 py-1 text-xs font-medium text-foreground/80"
-              >
-                {c}
-              </span>
+          <ul className="space-y-1 pl-4">
+            {(resume.certifications ?? []).map((cert, i) => (
+              <li key={i} className="list-disc text-sm text-foreground/80">
+                {[cert.name, cert.issuer, cert.issue_date]
+                  .filter(Boolean)
+                  .join("  |  ")}
+              </li>
             ))}
-          </div>
+          </ul>
         </ResumeSection>
       )}
 
-      {/* Awards & Recognition */}
-      {(resume.awards ?? []).length > 0 && (
-        <ResumeSection title="Awards &amp; Recognition">
+      {/* Achievements */}
+      {(resume.achievements ?? []).filter(Boolean).length > 0 && (
+        <ResumeSection title="Achievements">
           <ul className="space-y-1.5 pl-4">
-            {(resume.awards ?? []).map((a, i) => (
+            {(resume.achievements ?? []).map((a, i) => (
               <li
                 key={i}
                 className="list-disc text-sm leading-6 text-foreground/80"
@@ -1003,6 +1540,56 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
               </li>
             ))}
           </ul>
+        </ResumeSection>
+      )}
+
+      {/* Publications */}
+      {(resume.publications ?? []).filter((p) => p.title).length > 0 && (
+        <ResumeSection title="Publications">
+          <ul className="space-y-1.5 pl-4">
+            {(resume.publications ?? []).map((pub, i) => (
+              <li
+                key={i}
+                className="list-disc text-sm leading-6 text-foreground/80"
+              >
+                {[pub.title, pub.publisher, pub.publication_date]
+                  .filter(Boolean)
+                  .join("  |  ")}
+                {pub.url && (
+                  <a
+                    href={pub.url}
+                    className="ml-2 text-xs text-blue-600 underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    link
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </ResumeSection>
+      )}
+
+      {/* Languages */}
+      {(resume.languages ?? []).filter((l) => l.language).length > 0 && (
+        <ResumeSection title="Languages">
+          <p className="text-sm text-foreground/80">
+            {(resume.languages ?? [])
+              .map((l) =>
+                l.proficiency ? `${l.language} (${l.proficiency})` : l.language,
+              )
+              .join("  |  ")}
+          </p>
+        </ResumeSection>
+      )}
+
+      {/* Interests */}
+      {(resume.interests ?? []).filter(Boolean).length > 0 && (
+        <ResumeSection title="Interests">
+          <p className="text-sm text-foreground/80">
+            {(resume.interests ?? []).join("  |  ")}
+          </p>
         </ResumeSection>
       )}
 
@@ -1027,9 +1614,13 @@ function ResumeSection({
 }) {
   return (
     <div className="mt-6">
-      <h2 className="mb-3 border-b border-surface-highest pb-1 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
-        {title}
-      </h2>
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex-1 border-t border-[#1565C0]/40" />
+        <h2 className="text-[10px] font-bold uppercase tracking-widest text-[#1565C0]">
+          {title}
+        </h2>
+        <div className="flex-1 border-t border-[#1565C0]/40" />
+      </div>
       {children}
     </div>
   );

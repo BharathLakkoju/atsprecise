@@ -89,6 +89,7 @@ export function ResumeBuilderForm({
           phone: profile.phone ?? "",
           linkedin: profile.linkedin ?? "",
           github: profile.github ?? "",
+          portfolio: profile.portfolio ?? "",
           location: profile.location ?? "",
         },
         summary: profile.summary ?? "",

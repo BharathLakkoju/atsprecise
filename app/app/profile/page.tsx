@@ -274,6 +274,7 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [linkedin, setLinkedin] = useState("");
   const [github, setGithub] = useState("");
+  const [portfolio, setPortfolio] = useState("");
   const [contactLocation, setContactLocation] = useState("");
   const [summary, setSummary] = useState("");
 
@@ -339,6 +340,7 @@ export default function ProfilePage() {
     location: contactLocation.trim(),
     linkedin: linkedin.trim(),
     github: github.trim(),
+    portfolio: portfolio.trim(),
     summary: summary.trim(),
     experience: experiences
       .filter((e) => e.company.trim() || e.title.trim())
@@ -404,6 +406,9 @@ export default function ProfilePage() {
     setContactLocation(draft.location ?? "");
     setLinkedin(draft.linkedin ?? "");
     setGithub(draft.github ?? "");
+    setPortfolio(
+      (draft as typeof draft & { portfolio?: string }).portfolio ?? "",
+    );
     setSummary(draft.summary ?? "");
 
     setExperiences(
@@ -605,6 +610,10 @@ export default function ProfilePage() {
       setContactLocation(storeDraft.location);
       setLinkedin(storeDraft.linkedin);
       setGithub(storeDraft.github);
+      setPortfolio(
+        (storeDraft as typeof storeDraft & { portfolio?: string }).portfolio ??
+          "",
+      );
       setSummary(storeDraft.summary);
       if (storeDraft.experiences.length)
         setExperiences(
@@ -655,6 +664,7 @@ export default function ProfilePage() {
       setContactLocation(profile.location ?? "");
       setLinkedin(profile.linkedin ?? "");
       setGithub(profile.github ?? "");
+      setPortfolio(profile.portfolio ?? "");
       setSummary(profile.summary ?? "");
 
       if (profile.experience?.length) {
@@ -772,6 +782,7 @@ export default function ProfilePage() {
       location: contactLocation,
       linkedin,
       github,
+      portfolio,
       summary,
       experiences: experiences.map(
         ({ company, title, dates, location, bullets }) => ({
@@ -806,6 +817,7 @@ export default function ProfilePage() {
     contactLocation,
     linkedin,
     github,
+    portfolio,
     summary,
     experiences,
     skills,
@@ -1102,6 +1114,13 @@ export default function ProfilePage() {
                     value={github}
                     onChange={setGithub}
                     placeholder="github.com/arjun"
+                  />
+                  <Field
+                    label="Portfolio"
+                    id="p-portfolio"
+                    value={portfolio}
+                    onChange={setPortfolio}
+                    placeholder="arjun.dev or yourportfolio.com"
                   />
                 </div>
               </motion.div>

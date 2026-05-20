@@ -19,6 +19,7 @@ interface ContactInfo {
   phone: string;
   linkedin: string;
   github: string;
+  portfolio: string;
   location: string;
 }
 
@@ -56,32 +57,29 @@ interface CreatorResult {
   targetRole?: string;
   issues: Array<{ section: string; issue: string; severity: string }>;
   tailoredResume: {
-    name: string;
-    contact: ContactInfo;
-    summary: string;
-    experience: Array<{
-      company: string;
-      title: string;
-      dates: string;
-      location: string;
-      bullets: string[];
-    }>;
-    skills: Array<{ category: string; items: string[] }>;
-    projects: Array<{
+    header: {
       name: string;
-      tech: string;
-      link: string;
-      website?: string;
-      bullets: string[];
+      title: string;
+      contact: { phone: string; email: string; linkedin?: string; github?: string; portfolio?: string; location: string };
+    };
+    professional_summary: string;
+    technical_skills: Record<string, string[]>;
+    professional_experience: Array<{
+      job_title: string; company: string; employment_type?: string; location?: string;
+      duration: { start: string; end?: string };
+      responsibilities: string[]; achievements?: string[]; technologies_used?: string[];
     }>;
-    education: Array<{
-      degree: string;
-      institution: string;
-      year: string;
-      gpa: string;
+    projects: Array<{
+      title: string; role?: string; duration?: { start?: string; end?: string };
+      description?: string; highlights?: string[]; technologies_used?: string[];
+      github_url?: string; live_demo_url?: string;
     }>;
-    certifications: string[];
-    awards?: string[];
+    education: Array<{ degree: string; field_of_study?: string; institution: string; location?: string; graduation_date?: string; gpa?: string; percentage?: string }>;
+    certifications?: Array<{ name: string; issuer?: string; issue_date?: string; credential_id?: string; credential_url?: string }>;
+    achievements?: string[];
+    publications?: Array<{ title: string; publisher?: string; publication_date?: string; url?: string }>;
+    languages?: Array<{ language: string; proficiency?: string }>;
+    interests?: string[];
   };
   changesApplied: Array<{ section: string; what: string; why: string }>;
 }
@@ -98,6 +96,7 @@ function serializeResumeData(r: ResumeData): string {
   if (r.contact.location) lines.push(`Location: ${r.contact.location}`);
   if (r.contact.linkedin) lines.push(`LinkedIn: ${r.contact.linkedin}`);
   if (r.contact.github) lines.push(`GitHub: ${r.contact.github}`);
+  if (r.contact.portfolio) lines.push(`Portfolio: ${r.contact.portfolio}`);
 
   if (r.summary) {
     lines.push("", "PROFESSIONAL SUMMARY", r.summary);

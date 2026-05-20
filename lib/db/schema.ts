@@ -76,6 +76,7 @@ export const userProfiles = pgTable("user_profiles", {
   location: text("location").default(""),
   linkedin: text("linkedin").default(""),
   github: text("github").default(""),
+  portfolio: text("portfolio").default(""),
   summary: text("summary").default(""),
   experience: jsonb("experience").notNull().default([]),
   skills: jsonb("skills").notNull().default([]),

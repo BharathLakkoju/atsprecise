@@ -90,6 +90,7 @@ export function ResumeCreatorForm({
           phone: profile.phone ?? "",
           linkedin: profile.linkedin ?? "",
           github: profile.github ?? "",
+          portfolio: profile.portfolio ?? "",
           location: profile.location ?? "",
         },
         summary: profile.summary ?? "",

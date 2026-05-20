@@ -16,6 +16,7 @@ export interface ProfileFormDraft {
   location: string;
   linkedin: string;
   github: string;
+  portfolio: string;
   summary: string;
   experiences: Array<{
     company: string;

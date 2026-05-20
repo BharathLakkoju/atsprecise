@@ -10,6 +10,7 @@ export interface ProfileData {
   location: string;
   linkedin: string;
   github: string;
+  portfolio: string;
   summary: string;
   experience: Array<{
     company: string;
@@ -88,6 +89,7 @@ export async function GET() {
     location: data.location ?? "",
     linkedin: data.linkedin ?? "",
     github: data.github ?? "",
+    portfolio: data.portfolio ?? "",
     summary: data.summary ?? "",
     experience: (data.experience as ProfileData["experience"]) ?? [],
     skills: (data.skills as ProfileData["skills"]) ?? [],
@@ -155,6 +157,7 @@ export async function PUT(request: Request) {
     location: p.location?.trim() ?? "",
     linkedin: p.linkedin?.trim() ?? "",
     github: p.github?.trim() ?? "",
+    portfolio: p.portfolio?.trim() ?? "",
     summary: p.summary?.trim() ?? "",
     experience: p.experience ?? [],
     skills: p.skills ?? [],
