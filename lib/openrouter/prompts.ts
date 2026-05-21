@@ -120,20 +120,21 @@ The candidate must be able to truthfully claim every skill and technology in the
 
 ## Rewriting Rules
 - Mirror EXACT vocabulary from the JD -- ATS matches exact strings
-- Every bullet must be SHORT and HUMAN: 12-18 words max. Write like a real engineer, not a press release. Avoid buzzword stacks.
+- Every bullet must be CONCISE and HUMAN: 12-22 words max. Write like a real engineer, not a press release. Avoid buzzword stacks.
 - BAD bullet style: "Architected and spearheaded a highly scalable, end-to-end full-stack platform leveraging cutting-edge microservices"
 - GOOD bullet style: "Built a Node.js + PostgreSQL backend that cut API response time by 40%"
 - Use direct action verbs: Built, Added, Wrote, Set up, Fixed, Reduced, Increased, Shipped, Integrated, Led, Optimized, Automated, Deployed
 - Avoid corporate buzzwords: leveraged, spearheaded, architected (unless truly accurate), end-to-end, cutting-edge, robust, scalable solution, dynamic, synergy, paradigm
 - Metrics must be specific and believable (e.g. "reduced load time by 600ms" not "improved performance by 80%" unless clearly supported). Omit the metric entirely if none can be confidently inferred -- NEVER use placeholders like "[X%]"
 - DO NOT invent companies, degrees, or experience -- only rewrite and enhance what exists
-- Summary: 2-3 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact. Write naturally, not like a LinkedIn bio.
+- Summary: 3-4 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact + key differentiators. Write naturally, not like a LinkedIn bio.
 - Education: preserve CGPA exactly as written -- never change it
 - Section order: professional_summary → professional_experience → technical_skills → projects → education → achievements
 - JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
 - Set header.title to the target job title exactly as it appears in the JD (e.g. "Senior Backend Engineer")
 - PROJECTS: exactly 3 (most JD-relevant). Select the strongest 3 projects from the source resume and preserve their URLs exactly.
 - PROJECT URLS (CRITICAL): For every project, scan the original resume text for URLs associated with that project. Any URL containing "github.com" goes into 'github_url'. Any other web URL (e.g. vercel.app, netlify.app, a custom domain, or any non-GitHub URL) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is present in the source resume, it MUST appear in the output.
+- COMPLETENESS (CRITICAL): You MUST include ALL work the candidate has done at each company. Do NOT summarize or omit any responsibilities, achievements, or contributions. If a role had 8 distinct responsibilities, include all 8. Same for projects — if the candidate described 5 things they built or did in a project, include all 5 as separate highlights.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -176,7 +177,7 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore >= 95. At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (3-5 per role, max 18 words each). Preserve all original sections including achievements if present. PROJECTS: exactly 3 (most JD-relevant). Each project must have exactly 2-3 highlights — short, specific, human-sounding. No buzzword stacks.`;
+Constraints: atsScore >= 95. At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (include ALL responsibilities from the original resume for each role — minimum 4 bullets, no maximum cap — max 22 words each). Preserve all original sections including achievements if present. PROJECTS: exactly 3 (most JD-relevant). Each project must have 3-6 highlights capturing everything the candidate did — short, specific, human-sounding. No buzzword stacks.`;
 
 // ---------------------------------------------------------------------------
 // BUILD PROMPT -- Build a resume from structured profile data
@@ -197,20 +198,21 @@ The candidate must be able to truthfully claim every skill and technology in the
 
 ## Building Rules
 - Mirror EXACT vocabulary from the JD -- ATS matches exact strings
-- Every bullet must be SHORT and HUMAN: 12-18 words max. Write like a real engineer, not a press release. Avoid buzzword stacks.
+- Every bullet must be CONCISE and HUMAN: 12-22 words max. Write like a real engineer, not a press release. Avoid buzzword stacks.
 - BAD bullet style: "Architected and spearheaded a highly scalable, end-to-end full-stack platform leveraging cutting-edge microservices"
 - GOOD bullet style: "Built a React + Node.js API that reduced checkout time by 35% for 10k+ daily users"
 - Use direct action verbs: Built, Added, Wrote, Set up, Fixed, Reduced, Increased, Shipped, Integrated, Led, Optimized, Automated, Deployed
 - Avoid corporate buzzwords: leveraged, spearheaded, architected (unless truly accurate), end-to-end, cutting-edge, robust, scalable solution, dynamic, synergy
 - Metrics must be specific and believable. Omit the metric entirely if none can be confidently inferred -- NEVER use placeholders like "[X%]"
 - DO NOT invent companies, degrees, or experience -- only use and enhance what is in the profile
-- Summary: 2-3 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact. Write naturally, not like a LinkedIn bio.
+- Summary: 3-4 sentences: current role + aspiring to target role + top EXISTING skills that match JD + career impact + key differentiators. Write naturally, not like a LinkedIn bio.
 - Education: preserve CGPA exactly as it appears in the profile -- never change it
 - Section order: professional_summary → professional_experience → technical_skills → projects → education → achievements
 - PROJECTS: From ALL profile projects, select the 3 that best match the JD's tech stack and domain. Rank by relevance and include only those 3.
 - JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
 - Set header.title to the target job title exactly as it appears in the JD (e.g. "Senior Backend Engineer")
 - PROJECT URLS (CRITICAL): For every project, preserve all URLs from the profile data exactly. Any URL containing "github.com" goes into 'github_url'. Any other web URL (vercel.app, netlify.app, custom domain, etc.) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is in the source profile, it MUST appear in the output.
+- COMPLETENESS (CRITICAL): You MUST include ALL work the candidate has done at each company. Do NOT summarize or omit any responsibilities, achievements, or contributions. If a role had 7 distinct responsibilities, include all 7. Same for projects — if the candidate described 5 things they built or did, include all 5 as separate highlights.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -253,7 +255,7 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore >= 95. Exactly 3 projects maximum (most JD-relevant). Each project must have exactly 2-3 highlights — short, specific, human-sounding (max 18 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (3-5 per role, max 18 words each). All original sections must appear including achievements if present.`;
+Constraints: atsScore >= 95. Exactly 3 projects maximum (most JD-relevant). Each project must have 3-6 highlights capturing everything the candidate built and did — short, specific, human-sounding (max 22 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (include ALL responsibilities from the original profile for each role — minimum 4 bullets, no maximum cap — max 22 words each). All original sections must appear including achievements if present.`;
 
 // ---------------------------------------------------------------------------// CREATOR PROMPT -- Build a role-targeted resume without a specific JD
 // Strengthens existing bullets for the target role type. Zero new skills added.
@@ -281,14 +283,14 @@ The candidate must be able to truthfully claim every skill and technology in the
 
 ## Creation Rules
 - Role vocabulary: use standard industry terms for the target role — but only where the candidate's existing work already demonstrates those concepts
-- Every bullet must be SHORT and HUMAN: 12-18 words max. Write like a real engineer, not a corporate memo. Avoid buzzword stacks.
+- Every bullet must be CONCISE and HUMAN: 12-22 words max. Write like a real engineer, not a corporate memo. Avoid buzzword stacks.
 - BAD bullet style: "Spearheaded the end-to-end architecting of a highly scalable microservices-based cloud infrastructure"
 - GOOD bullet style: "Built a Python scraper that collected 50k+ records daily with zero downtime over 6 months"
 - Use direct, natural action verbs: Built, Added, Wrote, Set up, Fixed, Reduced, Increased, Shipped, Integrated, Led, Optimized, Automated, Deployed, Improved, Launched
 - Avoid corporate buzzwords: leveraged, spearheaded, architected (unless truly accurate), end-to-end, cutting-edge, robust, scalable solution, dynamic, synergy
 - Metrics must be specific and believable — if you can't infer a real number confidently, omit it. NEVER use placeholders like "[X%]".
 - DO NOT invent companies, degrees, or experience — only use and enhance what exists in the profile
-- Summary: CRITICAL RULE — Open with the TARGET ROLE title as the candidate's identity, never their current/original job title. Format: "[Target Role] with [X]+ years of experience [doing the most role-relevant thing they actually did]." Then 1-2 sentences weaving their strongest existing skills and measurable impact most relevant to the target role. Write naturally — the summary must read like a confident human wrote it, not like a LinkedIn template. Do NOT write "Software Engineer targeting..." or "experienced professional seeking..." — the opening noun must BE the target role title.
+- Summary: CRITICAL RULE — Open with the TARGET ROLE title as the candidate's identity, never their current/original job title. Format: "[Target Role] with [X]+ years of experience [doing the most role-relevant thing they actually did]." Then 2-3 sentences weaving their strongest existing skills, measurable impact, and notable projects most relevant to the target role. Write naturally — the summary must read like a confident human wrote it, not like a LinkedIn template. Do NOT write "Software Engineer targeting..." or "experienced professional seeking..." — the opening noun must BE the target role title.
 - Prioritize and reframe experience bullets to highlight aspects most relevant to the target role type
 - Education: preserve CGPA/GPA exactly as it appears in the profile — never change it
 - Section order: professional_summary → professional_experience → technical_skills → projects → education → achievements
@@ -296,6 +298,7 @@ The candidate must be able to truthfully claim every skill and technology in the
 - JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
 - Set header.title to the target role exactly as provided
 - PROJECT URLS (CRITICAL): For every project, preserve all URLs from the profile data exactly. Any URL containing "github.com" goes into 'github_url'. Any other web URL (vercel.app, netlify.app, custom domain, etc.) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is in the source profile, it MUST appear in the output.
+- COMPLETENESS (CRITICAL): You MUST include ALL work the candidate has done at each company. Do NOT summarize or omit responsibilities, achievements, or contributions. If a role had 6 distinct responsibilities, include all 6. Same for projects — if the candidate described 5 things they built or did, include all 5 as separate highlights.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -338,7 +341,7 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). Each project must have exactly 2-3 highlights — short, specific, human-sounding (max 18 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (3-5 per role, max 18 words each). All original sections must appear including achievements if present.`;
+Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). Each project must have 3-6 highlights capturing everything the candidate built and did — short, specific, human-sounding (max 22 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (include ALL responsibilities from the original profile for each role — minimum 4 bullets, no maximum cap — max 22 words each). All original sections must appear including achievements if present.`;
 
 // ---------------------------------------------------------------------------
 // PROFILE PARSE PROMPT -- Extract structured profile data from resume text

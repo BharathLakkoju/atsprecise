@@ -269,7 +269,7 @@ export async function POST(request: Request) {
         userMessage,
         undefined,
         45_000,
-        6500
+        8000
       );
     } catch {
       return NextResponse.json(
