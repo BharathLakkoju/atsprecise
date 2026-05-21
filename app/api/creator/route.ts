@@ -306,6 +306,20 @@ export async function POST(request: Request) {
       );
     }
 
+    /* ── 5a. Restore project URLs the AI may have dropped ───────── */
+    if (aiResult.tailoredResume.projects && rd.projects?.length) {
+      for (const proj of aiResult.tailoredResume.projects) {
+        const src = rd.projects.find(
+          (p) => proj.title?.toLowerCase().includes(p.name.toLowerCase()) ||
+                 p.name.toLowerCase().includes(proj.title?.toLowerCase() ?? "")
+        );
+        if (src) {
+          if (!proj.github_url && src.link) proj.github_url = src.link;
+          if (!proj.live_demo_url && src.website) proj.live_demo_url = src.website;
+        }
+      }
+    }
+
     /* ── 6. Save metadata for authenticated users ─────────────── */
     if (user) {
       const service = getSupabaseServiceClient();
