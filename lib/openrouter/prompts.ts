@@ -209,6 +209,7 @@ The candidate must be able to truthfully claim every skill and technology in the
 - PROJECTS: From ALL profile projects, select the 3 that best match the JD's tech stack and domain. Rank by relevance and include only those 3.
 - JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
 - Set header.title to the target job title exactly as it appears in the JD (e.g. "Senior Backend Engineer")
+- PROJECT URLS (CRITICAL): For every project, preserve all URLs from the profile data exactly. Any URL containing "github.com" goes into 'github_url'. Any other web URL (vercel.app, netlify.app, custom domain, etc.) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is in the source profile, it MUST appear in the output.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -293,6 +294,7 @@ The candidate must be able to truthfully claim every skill and technology in the
 - PROJECTS: From ALL profile projects, select the 3 that best match the target role's domain and tech emphasis. Rank by relevance and include only those 3.
 - JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
 - Set header.title to the target role exactly as provided
+- PROJECT URLS (CRITICAL): For every project, preserve all URLs from the profile data exactly. Any URL containing "github.com" goes into 'github_url'. Any other web URL (vercel.app, netlify.app, custom domain, etc.) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is in the source profile, it MUST appear in the output.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
