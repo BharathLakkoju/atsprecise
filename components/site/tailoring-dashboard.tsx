@@ -363,11 +363,27 @@ async function downloadPDF(r: TailoredResume, companyName?: string) {
         .filter(Boolean)
         .join(" – ");
 
-      // Line 1: Project Name (bold left) + Dates (right)
+      // Line 1: Project Name (bold left) + GitHub · Live Demo links + Dates (right)
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       setColor(BLACK);
       pdf.text(p.title ?? "", margin, rowY);
+      const titleW = pdf.getTextWidth(p.title ?? "");
+      // Append URL links inline after the title
+      let urlX = margin + titleW + 3;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8.5);
+      if (p.github_url) {
+        setColor(BLUE);
+        const sep = "  ·  GitHub";
+        pdf.text(sep, urlX, rowY);
+        urlX += pdf.getTextWidth(sep);
+      }
+      if (p.live_demo_url) {
+        setColor(BLUE);
+        const sep = "  ·  Live Demo";
+        pdf.text(sep, urlX, rowY);
+      }
       if (pdates) {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);
@@ -410,25 +426,6 @@ async function downloadPDF(r: TailoredResume, companyName?: string) {
         const techStr = p.technologies_used!.filter(Boolean).join(", ");
         const techLines = pdf.splitTextToSize(techStr, contentW);
         techLines.forEach((line: string) => {
-          ensureSpace(5);
-          pdf.text(line, margin, y);
-          y += 4;
-        });
-        setColor(BLACK);
-      }
-
-      // GitHub & Live Demo URLs
-      if (p.github_url || p.live_demo_url) {
-        ensureSpace(5);
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(8.5);
-        setColor(BLUE);
-        const urlParts: string[] = [];
-        if (p.github_url) urlParts.push(`GitHub: ${p.github_url}`);
-        if (p.live_demo_url) urlParts.push(`Live Demo: ${p.live_demo_url}`);
-        const urlStr = urlParts.join("  |  ");
-        const urlLines = pdf.splitTextToSize(urlStr, contentW);
-        urlLines.forEach((line: string) => {
           ensureSpace(5);
           pdf.text(line, margin, y);
           y += 4;
@@ -807,6 +804,12 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
         new Paragraph({
           children: [
             new TextRun({ text: p.title ?? "", bold: true, size: 22 }),
+            ...(p.github_url
+              ? [new TextRun({ text: "  ·  GitHub", size: 18, color: BLUE })]
+              : []),
+            ...(p.live_demo_url
+              ? [new TextRun({ text: "  ·  Live Demo", size: 18, color: BLUE })]
+              : []),
             pdates
               ? new TextRun({ text: `\t${pdates}`, size: 18, color: GRAY })
               : new TextRun(""),
@@ -855,23 +858,6 @@ async function downloadDOCX(r: TailoredResume, companyName?: string) {
               }),
             ],
             spacing: { after: 60 },
-          }),
-        );
-      }
-      if (p.github_url || p.live_demo_url) {
-        const urlParts: string[] = [];
-        if (p.github_url) urlParts.push(`GitHub: ${p.github_url}`);
-        if (p.live_demo_url) urlParts.push(`Live Demo: ${p.live_demo_url}`);
-        children.push(
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: urlParts.join("  |  "),
-                size: 18,
-                color: BLUE,
-              }),
-            ],
-            spacing: { after: 40 },
           }),
         );
       }
@@ -1471,32 +1457,10 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
               return (
                 <div key={i}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-2">
-                    <span className="font-semibold text-foreground">
-                      {p.title}
-                    </span>
-                    {pdates && (
-                      <span className="text-xs text-muted-foreground">
-                        {pdates}
+                    <div className="flex flex-wrap items-baseline gap-x-2">
+                      <span className="font-semibold text-foreground">
+                        {p.title}
                       </span>
-                    )}
-                  </div>
-                  {p.role && (
-                    <p className="text-xs italic text-muted-foreground">
-                      {p.role}
-                    </p>
-                  )}
-                  {p.description && (
-                    <p className="mt-1 text-sm leading-6 text-foreground/80">
-                      {p.description}
-                    </p>
-                  )}
-                  {(p.technologies_used ?? []).filter(Boolean).length > 0 && (
-                    <p className="text-xs italic text-muted-foreground">
-                      {p.technologies_used!.filter(Boolean).join(", ")}
-                    </p>
-                  )}
-                  {(p.github_url || p.live_demo_url) && (
-                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
                       {p.github_url && (
                         <a
                           href={ensureHttps(p.github_url)}
@@ -1518,6 +1482,26 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
                         </a>
                       )}
                     </div>
+                    {pdates && (
+                      <span className="text-xs text-muted-foreground">
+                        {pdates}
+                      </span>
+                    )}
+                  </div>
+                  {p.role && (
+                    <p className="text-xs italic text-muted-foreground">
+                      {p.role}
+                    </p>
+                  )}
+                  {p.description && (
+                    <p className="mt-1 text-sm leading-6 text-foreground/80">
+                      {p.description}
+                    </p>
+                  )}
+                  {(p.technologies_used ?? []).filter(Boolean).length > 0 && (
+                    <p className="text-xs italic text-muted-foreground">
+                      {p.technologies_used!.filter(Boolean).join(", ")}
+                    </p>
                   )}
                   <ul className="mt-1.5 space-y-1.5 pl-4">
                     {(p.highlights ?? []).map((h, j) => (
