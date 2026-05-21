@@ -7,7 +7,7 @@ import { getCurrentUser } from "@/lib/supabase/auth-helpers";
 import { getSupabaseServiceClient } from "@/lib/supabase/service";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const FREE_USE_LIMIT = 2;
 
@@ -150,8 +150,8 @@ export async function POST(request: Request) {
         TAILORING_SYSTEM_PROMPT,
         userMessage,
         undefined,
-        30_000,  // 30s timeout — streaming handles long generations
-        4600     // reduced from 4600 for faster completion
+        45_000,
+        6500
       );
     } catch (configError) {
       return NextResponse.json(

@@ -127,11 +127,13 @@ export function ResumeCreatorForm({
             name?: string;
             tech?: string;
             link?: string;
+            website?: string;
             bullets?: string[] | string;
           }) => ({
             name: p.name ?? "",
             tech: p.tech ?? "",
             link: p.link ?? "",
+            website: p.website ?? "",
             bullets: Array.isArray(p.bullets)
               ? p.bullets
               : (p.bullets ?? "").split("\n").filter(Boolean),

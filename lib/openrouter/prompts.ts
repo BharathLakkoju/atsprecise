@@ -132,6 +132,7 @@ The candidate must be able to truthfully claim every skill and technology in the
 - Section order: professional_summary → professional_experience → technical_skills → projects → education → achievements
 - JD keyword weaving applies only to responsibilities/summary phrasing, not to the technical_skills section or projects.technologies_used
 - Set header.title to the target job title exactly as it appears in the JD (e.g. "Senior Backend Engineer")
+- PROJECTS: exactly 3 (most JD-relevant). Select the strongest 3 projects from the source resume and preserve their URLs exactly.
 - PROJECT URLS (CRITICAL): For every project, scan the original resume text for URLs associated with that project. Any URL containing "github.com" goes into 'github_url'. Any other web URL (e.g. vercel.app, netlify.app, a custom domain, or any non-GitHub URL) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is present in the source resume, it MUST appear in the output.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
