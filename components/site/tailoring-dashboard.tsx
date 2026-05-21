@@ -1281,16 +1281,14 @@ export function TailoringDashboard({ result }: { result: TailoringResult }) {
 
 /* ─────────────────────────────────────── ResumePreview sub-component ── */
 
+function ensureHttps(url: string): string {
+  if (!url) return url;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  return `https://${url}`;
+}
+
 function ResumePreview({ resume }: { resume: TailoredResume }) {
   const c = resume.header?.contact;
-  const contactParts = [
-    c?.email,
-    c?.phone,
-    c?.location,
-    c?.linkedin,
-    c?.github,
-    c?.portfolio,
-  ].filter(Boolean) as string[];
 
   const SKILL_LABELS: Record<string, string> = {
     programming_languages: "Programming Languages",
@@ -1323,10 +1321,56 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
             {resume.header.title}
           </p>
         )}
-        {contactParts.length > 0 && (
-          <p className="mt-1 text-xs text-muted-foreground wrap-break-word">
-            {contactParts.join("  |  ")}
-          </p>
+        {(c?.phone ||
+          c?.email ||
+          c?.location ||
+          c?.linkedin ||
+          c?.github ||
+          c?.portfolio) && (
+          <div className="mt-1.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            {c?.phone && <span>{c.phone}</span>}
+            {c?.email && (
+              <a
+                href={`mailto:${c.email}`}
+                className="text-blue-600 underline hover:text-blue-800"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {c.email}
+              </a>
+            )}
+            {c?.location && <span>{c.location}</span>}
+            {c?.linkedin && (
+              <a
+                href={ensureHttps(c.linkedin)}
+                className="text-blue-600 underline hover:text-blue-800"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {c.linkedin}
+              </a>
+            )}
+            {c?.github && (
+              <a
+                href={ensureHttps(c.github)}
+                className="text-blue-600 underline hover:text-blue-800"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {c.github}
+              </a>
+            )}
+            {c?.portfolio && (
+              <a
+                href={ensureHttps(c.portfolio)}
+                className="text-blue-600 underline hover:text-blue-800"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {c.portfolio}
+              </a>
+            )}
+          </div>
         )}
       </div>
 
@@ -1451,28 +1495,30 @@ function ResumePreview({ resume }: { resume: TailoredResume }) {
                       {p.technologies_used!.filter(Boolean).join(", ")}
                     </p>
                   )}
-                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
-                    {p.github_url && (
-                      <a
-                        href={p.github_url}
-                        className="text-xs text-blue-600 underline"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        GitHub
-                      </a>
-                    )}
-                    {p.live_demo_url && (
-                      <a
-                        href={p.live_demo_url}
-                        className="text-xs text-blue-600 underline"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Live Demo
-                      </a>
-                    )}
-                  </div>
+                  {(p.github_url || p.live_demo_url) && (
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5">
+                      {p.github_url && (
+                        <a
+                          href={ensureHttps(p.github_url)}
+                          className="text-xs text-blue-600 underline hover:text-blue-800"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          GitHub
+                        </a>
+                      )}
+                      {p.live_demo_url && (
+                        <a
+                          href={ensureHttps(p.live_demo_url)}
+                          className="text-xs text-blue-600 underline hover:text-blue-800"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Live Demo
+                        </a>
+                      )}
+                    </div>
+                  )}
                   <ul className="mt-1.5 space-y-1.5 pl-4">
                     {(p.highlights ?? []).map((h, j) => (
                       <li
