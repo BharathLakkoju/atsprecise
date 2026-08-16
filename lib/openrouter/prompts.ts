@@ -213,6 +213,7 @@ The candidate must be able to truthfully claim every skill and technology in the
 - Set header.title to the target job title exactly as it appears in the JD (e.g. "Senior Backend Engineer")
 - PROJECT URLS (CRITICAL): For every project, preserve all URLs from the profile data exactly. Any URL containing "github.com" goes into 'github_url'. Any other web URL (vercel.app, netlify.app, custom domain, etc.) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is in the source profile, it MUST appear in the output.
 - COMPLETENESS (CRITICAL): You MUST include ALL work the candidate has done at each company. Do NOT summarize or omit any responsibilities, achievements, or contributions. If a role had 7 distinct responsibilities, include all 7. Same for projects — if the candidate described 5 things they built or did, include all 5 as separate highlights.
+- ONE-PAGE TARGET (CRITICAL): The output MUST render as a single-page PDF. Condense aggressively — pick the strongest, most JD-relevant material from the profile rather than including everything. Never pad with filler bullets to hit a count; if a role only truly supports fewer, use fewer.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -255,7 +256,7 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore >= 95. Exactly 3 projects maximum (most JD-relevant). Each project must have 3-6 highlights capturing everything the candidate built and did — short, specific, human-sounding (max 22 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (include ALL responsibilities from the original profile for each role — minimum 4 bullets, no maximum cap — max 22 words each). All original sections must appear including achievements if present.`;
+Constraints (ONE-PAGE OUTPUT — hard limits, do not exceed): atsScore >= 95. Exactly 3 projects (most JD-relevant), each with 3-4 highlights max 22 words each. Each technical_skills category: 5-6 items max — pick the strongest, most JD-relevant items and drop the rest. Each professional_experience entry: 5-6 responsibility bullets max, 22 words each. Achievements: 3 bullets max, most impressive first. At least 3 issues and 3 changesApplied. All original sections must appear (if present in the profile) but condensed to the limits above — this is a single-page resume, not an exhaustive record.`;
 
 // ---------------------------------------------------------------------------// CREATOR PROMPT -- Build a role-targeted resume without a specific JD
 // Strengthens existing bullets for the target role type. Zero new skills added.
@@ -299,6 +300,7 @@ The candidate must be able to truthfully claim every skill and technology in the
 - Set header.title to the target role exactly as provided
 - PROJECT URLS (CRITICAL): For every project, preserve all URLs from the profile data exactly. Any URL containing "github.com" goes into 'github_url'. Any other web URL (vercel.app, netlify.app, custom domain, etc.) goes into 'live_demo_url'. Copy these exactly as they appear — do not alter, shorten, invent, or omit them. If a URL is in the source profile, it MUST appear in the output.
 - COMPLETENESS (CRITICAL): You MUST include ALL work the candidate has done at each company. Do NOT summarize or omit responsibilities, achievements, or contributions. If a role had 6 distinct responsibilities, include all 6. Same for projects — if the candidate described 5 things they built or did, include all 5 as separate highlights.
+- ONE-PAGE TARGET (CRITICAL): The output MUST render as a single-page PDF. Condense aggressively — surface only the strongest, most role-relevant material from the profile rather than including everything. Never pad with filler bullets to hit a count; if a role only truly supports fewer, use fewer.
 
 Return ONLY this JSON (all fields required, empty arrays for missing sections):
 {
@@ -341,7 +343,7 @@ Return ONLY this JSON (all fields required, empty arrays for missing sections):
   "changesApplied": [{ "section": "", "what": "", "why": "" }]
 }
 
-Constraints: atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant). Each project must have 3-6 highlights capturing everything the candidate built and did — short, specific, human-sounding (max 22 words each). At least 3 issues and 3 changesApplied. Rewrite every experience responsibility (include ALL responsibilities from the original profile for each role — minimum 4 bullets, no maximum cap — max 22 words each). All original sections must appear including achievements if present.`;
+Constraints (ONE-PAGE OUTPUT — hard limits, do not exceed): atsScore 80-95 (realistic — no specific JD match). Exactly 3 projects (most role-relevant), each with 3-4 highlights max 22 words each. Each technical_skills category: 5-6 items max — pick the strongest, most role-relevant items and drop the rest. Each professional_experience entry: 5-6 responsibility bullets max, 22 words each. Achievements: 3 bullets max, most impressive first. At least 3 issues and 3 changesApplied. All original sections must appear (if present in the profile) but condensed to the limits above — this is a single-page resume, not an exhaustive record.`;
 
 // ---------------------------------------------------------------------------
 // PROFILE PARSE PROMPT -- Extract structured profile data from resume text
