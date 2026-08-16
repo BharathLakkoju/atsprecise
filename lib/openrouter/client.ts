@@ -90,13 +90,14 @@ export async function callOpenRouter(
 
       if (!response.ok) {
         const errText = await response.text().catch(() => response.statusText);
-        if (response.status === 429 || response.status >= 500) {
-          lastError = new Error(`HTTP ${response.status}: ${errText}`);
-          continue;
+        lastError = new Error(`HTTP ${response.status}: ${errText}`);
+
+        // Auth errors won't be fixed by switching models -- fail fast.
+        if (response.status === 401 || response.status === 403) {
+          break;
         }
 
-        lastError = new Error(`HTTP ${response.status}: ${errText}`);
-        break;
+        continue;
       }
 
       // ── Stream reading ───────────────────────────────────────
