@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { parseResumeFile } from "@/lib/ats/parser";
-import type { AtsEvaluationResult, CareerSummary, ScoreBreakdown } from "@/lib/ats/types";
+import type { AtsEvaluationResult, CareerSummary, EvidenceStatus, ScoreBreakdown } from "@/lib/ats/types";
 import { callOpenRouter, parseJsonFromModel } from "@/lib/openrouter/client";
 import { ANALYSIS_SYSTEM_PROMPT, summarizeInputs } from "@/lib/openrouter/prompts";
 import { serverEvaluationSchema } from "@/lib/validations/evaluation";
@@ -192,6 +192,7 @@ export async function POST(request: Request) {
       highValueSkills: string[];
       projectRecommendations: Array<{ title: string; description: string; skills: string[]; impact: string; priority?: string }>;
       careerGapSummary: string | null;
+      skillEvidence: Array<{ skill: string; status: string; evidence: string | null }>;
     }
 
     interface AiCareerSummaryInner {
@@ -262,6 +263,17 @@ export async function POST(request: Request) {
           }))
         : [],
       careerGapSummary: aiResult.careerGapSummary ?? null,
+      skillEvidence: Array.isArray(aiResult.skillEvidence)
+        ? aiResult.skillEvidence
+            .filter((e) => e && typeof e.skill === "string")
+            .map((e) => ({
+              skill: e.skill,
+              status: (["not_found", "weakly_implied", "strongly_demonstrated"].includes(e.status)
+                ? e.status
+                : "not_found") as EvidenceStatus,
+              evidence: e.evidence ?? null
+            }))
+        : [],
       generatedAt: new Date().toISOString(),
       processingMs: Date.now() - start
     };

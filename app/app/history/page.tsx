@@ -9,7 +9,47 @@ import {
   getSupabaseBrowserClient,
   hasSupabaseConfig,
 } from "@/lib/supabase/client";
-import type { AtsEvaluationResult } from "@/lib/ats/types";
+import type { AtsEvaluationResult, SkillEvidence } from "@/lib/ats/types";
+
+const evidenceDotClass: Record<SkillEvidence["status"], string> = {
+  not_found: "bg-foreground/30",
+  weakly_implied: "bg-amber-500",
+  strongly_demonstrated: "bg-emerald-500",
+};
+
+function EvidenceChip({
+  skill,
+  evidence,
+  className,
+}: {
+  skill: string;
+  evidence?: SkillEvidence;
+  className: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (!evidence) {
+    return <span className={className}>{skill}</span>;
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className={`inline-flex items-center gap-1.5 ${className}`}
+      >
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${evidenceDotClass[evidence.status]}`} />
+        {skill}
+      </button>
+      {open && (
+        <p className="max-w-[12rem] text-[10px] leading-4 text-muted-foreground/70 italic">
+          {evidence.evidence ?? "Not found in resume."}
+        </p>
+      )}
+    </div>
+  );
+}
 
 interface RemoteEntry {
   id: string;
@@ -33,6 +73,9 @@ function scoreBucket(score: number) {
 
 function ExpandableEntry({ entry, index }: { entry: RemoteEntry; index: number }) {
   const [open, setOpen] = useState(false);
+  const evidenceBySkill = new Map(
+    (entry.full_result?.skillEvidence ?? []).map((e) => [e.skill, e] as const),
+  );
 
   return (
     <motion.div
@@ -134,9 +177,12 @@ function ExpandableEntry({ entry, index }: { entry: RemoteEntry; index: number }
                     <p className="label-sm text-muted-foreground mb-2">MANDATORY MISSING</p>
                     <div className="flex flex-wrap gap-1.5">
                       {entry.mandatory_skills.map((s) => (
-                        <span key={s} className="bg-surface-highest px-2 py-0.5 text-xs text-foreground">
-                          {s}
-                        </span>
+                        <EvidenceChip
+                          key={s}
+                          skill={s}
+                          evidence={evidenceBySkill.get(s)}
+                          className="bg-surface-highest px-2 py-0.5 text-xs text-foreground"
+                        />
                       ))}
                     </div>
                   </div>
@@ -163,9 +209,12 @@ function ExpandableEntry({ entry, index }: { entry: RemoteEntry; index: number }
                     <p className="label-sm text-muted-foreground mb-2">MATCHED SKILLS</p>
                     <div className="flex flex-wrap gap-1.5">
                       {entry.full_result.matchedSkills.slice(0, 6).map((s) => (
-                        <span key={s} className="bg-foreground px-2 py-0.5 text-[10px] font-medium text-background">
-                          {s}
-                        </span>
+                        <EvidenceChip
+                          key={s}
+                          skill={s}
+                          evidence={evidenceBySkill.get(s)}
+                          className="bg-foreground px-2 py-0.5 text-[10px] font-medium text-background"
+                        />
                       ))}
                     </div>
                   </div>

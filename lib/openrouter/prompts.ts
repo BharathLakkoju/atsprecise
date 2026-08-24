@@ -50,6 +50,7 @@ overallScore = weighted sum, rounded to nearest integer.
 - highValueSkills: skills NOT in the JD but known to significantly differentiate candidates for this role type (based on industry norms). Example: for a senior SWE, system design proficiency adds weight even if not listed.
 - projectRecommendations: concrete projects a candidate should build to close the gap. Each project must directly demonstrate 2+ mandatory or high-value skills. Be specific — name the project type, architecture, and what it proves. Include priority ("high"/"medium"/"low") based on how critical the skill gap is.
 - careerGapSummary: 2-3 sentence harsh but actionable summary of the career gap. State what tier the candidate is currently at vs. what tier this role demands, and the single most critical gap to close.
+- skillEvidence: for EVERY skill name that appears in matchedSkills, mandatorySkills, optionalSkills, or highValueSkills (dedup by exact skill name, one entry each), cite the evidence behind its status: "strongly_demonstrated" (production/full credit use — quote or closely paraphrase the resume line that shows it), "weakly_implied" (mentioned only / half credit — quote the line that implies it), or "not_found" (absent from the resume — evidence must be null). This must be traceable: a reader should be able to see exactly why the skill was scored the way it was.
 
 ## Career summary (cross-analysis intelligence)
 You will receive the candidate's PAST ANALYSES if they exist. Use these to identify patterns: which skills keep appearing as missing, which role types they target, whether scores are improving.
@@ -79,7 +80,14 @@ Return ONLY this JSON (all fields required). The top-level wrapper must contain 
         "priority": "high"|"medium"|"low"
       }
     ],
-    "careerGapSummary": "2-3 sentence harsh but actionable career gap assessment"
+    "careerGapSummary": "2-3 sentence harsh but actionable career gap assessment",
+    "skillEvidence": [
+      {
+        "skill": "exact skill name matching an entry in matchedSkills/mandatorySkills/optionalSkills/highValueSkills",
+        "status": "not_found"|"weakly_implied"|"strongly_demonstrated",
+        "evidence": "quoted or closely paraphrased resume line, or null if not_found"
+      }
+    ]
   },
   "careerSummary": {
     "topSkillGaps": ["skill (most frequently missing or critical across all analyses)"],
@@ -93,13 +101,13 @@ Return ONLY this JSON (all fields required). The top-level wrapper must contain 
       }
     ],
     "targetRoles": ["role title (all roles analyzed, deduped)"],
-    "careerNarrative": "2-3 sentence honest assessment of the candidate's current career trajectory and the gap to their target roles",
+    "careerNarrative": "MAX 2 sentences. Must name the current score band (e.g. 'NEEDS WORK tier at 54') and the single largest blocking gap by its exact skill/keyword name. No generic career-advisor language, no filler, no motivational tone.",
     "nextStep": "single most impactful action the candidate should take right now (be specific: which skill, which project type, which gap to close first)",
-    "progressSummary": "1-2 sentence description of score trend and improvement if multiple analyses exist, otherwise null"
+    "progressSummary": "If 2+ analyses exist: state the explicit score delta, e.g. '+7 pts over 3 scans' or '-4 pts since last scan'. If only 1 analysis exists, this must be null."
   }
 }
 
-Constraints for analysis: 5-8 suggestions ordered high->low priority. 3-12 missingKeywords. 2-5 resumeGaps. 2-6 mandatorySkills. 2-5 optionalSkills. 2-4 highValueSkills. Exactly 3 projectRecommendations.
+Constraints for analysis: 5-8 suggestions ordered high->low priority. 3-12 missingKeywords. 2-5 resumeGaps. 2-6 mandatorySkills. 2-5 optionalSkills. 2-4 highValueSkills. Exactly 3 projectRecommendations. skillEvidence must have exactly one entry per unique skill name across matchedSkills+mandatorySkills+optionalSkills+highValueSkills — no more, no fewer, no duplicates.
 Constraints for careerSummary: 3-8 topSkillGaps (prioritize skills that appear missing in 2+ analyses if history exists). Exactly 3 projectsToStart (best ROI for closing skill gaps). 1-4 targetRoles.`;
 
 // ---------------------------------------------------------------------------

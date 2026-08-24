@@ -59,6 +59,8 @@ export const userCareerSummary = pgTable("user_career_summary", {
   totalAnalyses: integer("total_analyses").notNull().default(0),
   avgScore: integer("avg_score").notNull().default(0),
   bestScore: integer("best_score").notNull().default(0),
+  /** User-chosen single role to focus the dashboard on, distinct from the AI-derived targetRoles array. */
+  pinnedTargetRole: text("pinned_target_role"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull()
 });
 

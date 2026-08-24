@@ -1,11 +1,87 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { AtsEvaluationResult } from "@/lib/ats/types";
+import type { AtsEvaluationResult, SkillEvidence } from "@/lib/ats/types";
+
+const evidenceDotClass: Record<SkillEvidence["status"], string> = {
+  not_found: "bg-foreground/30",
+  weakly_implied: "bg-amber-500",
+  strongly_demonstrated: "bg-emerald-500",
+};
+
+function EvidenceSkillRow({
+  skill,
+  evidence,
+  dotClassName,
+}: {
+  skill: string;
+  evidence?: SkillEvidence;
+  /** Fallback dot style used when no evidence entry exists for this skill. */
+  dotClassName: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (!evidence) {
+    return (
+      <li className="flex items-center gap-3 text-sm text-foreground">
+        <span className={`h-1.5 w-1.5 shrink-0 ${dotClassName}`} />
+        {skill}
+      </li>
+    );
+  }
+
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="flex w-full items-center gap-3 text-left text-sm text-foreground"
+      >
+        <span className={`h-1.5 w-1.5 shrink-0 ${evidenceDotClass[evidence.status]}`} />
+        <span className="flex-1">{skill}</span>
+      </button>
+      {open && (
+        <p className="mt-1 ml-4.5 border-l border-foreground/10 pl-3 text-xs leading-5 text-muted-foreground/70 italic">
+          {evidence.evidence ?? "Not found in resume."}
+        </p>
+      )}
+    </li>
+  );
+}
+
+function EvidenceSkillChip({ skill, evidence }: { skill: string; evidence?: SkillEvidence }) {
+  const [open, setOpen] = useState(false);
+
+  if (!evidence) {
+    return (
+      <span className="inline-flex items-center bg-foreground px-2.5 py-1 text-xs font-medium text-background">
+        {skill}
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="inline-flex items-center gap-1.5 bg-foreground px-2.5 py-1 text-xs font-medium text-background"
+      >
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${evidenceDotClass[evidence.status]}`} />
+        {skill}
+      </button>
+      {open && (
+        <p className="max-w-[14rem] text-[11px] leading-4 text-muted-foreground/70 italic">
+          {evidence.evidence ?? "Not found in resume."}
+        </p>
+      )}
+    </div>
+  );
+}
 
 const labelMap = {
   keywordMatch: "KEYWORD MATCH",
@@ -44,6 +120,14 @@ function getScoreVerdict(score: number) {
 
 export function ResultsDashboard({ result, history }: ResultsDashboardProps) {
   const [showAllKeywords, setShowAllKeywords] = useState(false);
+
+  const evidenceBySkill = useMemo(() => {
+    const map = new Map<string, SkillEvidence>();
+    for (const e of result.skillEvidence ?? []) {
+      map.set(e.skill, e);
+    }
+    return map;
+  }, [result.skillEvidence]);
 
   const visibleMissing = showAllKeywords
     ? result.missingKeywords
@@ -176,13 +260,12 @@ export function ResultsDashboard({ result, history }: ResultsDashboardProps) {
             </p>
             <ul className="mt-4 space-y-2">
               {(result.mandatorySkills ?? []).map((skill) => (
-                <li
+                <EvidenceSkillRow
                   key={skill}
-                  className="flex items-center gap-3 text-sm text-foreground"
-                >
-                  <span className="h-1.5 w-1.5 shrink-0 bg-foreground/60" />
-                  {skill}
-                </li>
+                  skill={skill}
+                  evidence={evidenceBySkill.get(skill)}
+                  dotClassName="bg-foreground/60"
+                />
               ))}
               {!result.mandatorySkills?.length && (
                 <li className="text-xs text-muted-foreground">
@@ -204,13 +287,12 @@ export function ResultsDashboard({ result, history }: ResultsDashboardProps) {
             </p>
             <ul className="mt-4 space-y-2">
               {(result.optionalSkills ?? []).map((skill) => (
-                <li
+                <EvidenceSkillRow
                   key={skill}
-                  className="flex items-center gap-3 text-sm text-foreground"
-                >
-                  <span className="h-1.5 w-1.5 shrink-0 bg-foreground/40" />
-                  {skill}
-                </li>
+                  skill={skill}
+                  evidence={evidenceBySkill.get(skill)}
+                  dotClassName="bg-foreground/40"
+                />
               ))}
               {!result.optionalSkills?.length && (
                 <li className="text-xs text-muted-foreground">
@@ -232,13 +314,12 @@ export function ResultsDashboard({ result, history }: ResultsDashboardProps) {
             </p>
             <ul className="mt-4 space-y-2">
               {(result.highValueSkills ?? []).map((skill) => (
-                <li
+                <EvidenceSkillRow
                   key={skill}
-                  className="flex items-center gap-3 text-sm text-foreground"
-                >
-                  <span className="h-1.5 w-1.5 shrink-0 bg-foreground" />
-                  {skill}
-                </li>
+                  skill={skill}
+                  evidence={evidenceBySkill.get(skill)}
+                  dotClassName="bg-foreground"
+                />
               ))}
               {!result.highValueSkills?.length && (
                 <li className="text-xs text-muted-foreground">
@@ -297,12 +378,11 @@ export function ResultsDashboard({ result, history }: ResultsDashboardProps) {
             <p className="label-sm text-muted-foreground">MATCHED</p>
             <div className="mt-4 flex flex-wrap gap-2">
               {result.matchedSkills.map((skill) => (
-                <span
+                <EvidenceSkillChip
                   key={skill}
-                  className="inline-flex items-center bg-foreground px-2.5 py-1 text-xs font-medium text-background"
-                >
-                  {skill}
-                </span>
+                  skill={skill}
+                  evidence={evidenceBySkill.get(skill)}
+                />
               ))}
               {result.matchedSkills.length === 0 && (
                 <span className="text-xs text-muted-foreground">

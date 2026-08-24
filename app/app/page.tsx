@@ -17,6 +17,8 @@ import {
   AlertCircle,
   Hammer,
   ChevronRight,
+  Pin,
+  X,
 } from "lucide-react";
 
 import { useEvaluationStore } from "@/store/evaluation-store";
@@ -25,6 +27,9 @@ import {
   hasSupabaseConfig,
 } from "@/lib/supabase/client";
 import type { CareerSummary, ProjectRecommendation } from "@/lib/ats/types";
+import { DashboardTrend } from "@/components/app/dashboard-trend";
+import { RecentActivity, type ActivityEntry } from "@/components/app/recent-activity";
+import { ResumeComparison } from "@/components/app/resume-comparison";
 
 interface RemoteEntry {
   id: string;
@@ -51,6 +56,9 @@ export default function AppDashboardPage() {
       })
     | null
   >(null);
+  const [pinnedRole, setPinnedRole] = useState<string | null>(null);
+  const [pinBusy, setPinBusy] = useState(false);
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!hasSupabaseConfig()) return;
@@ -65,7 +73,7 @@ export default function AppDashboardPage() {
       if (!active || !user) return;
       setIsLoggedIn(true);
 
-      const [historyRes, summaryRes] = await Promise.all([
+      const [historyRes, summaryRes, profileRes] = await Promise.all([
         supabase
           .from("user_evaluations")
           .select(
@@ -79,11 +87,18 @@ export default function AppDashboardPage() {
           .select("*")
           .eq("user_id", user.id)
           .maybeSingle(),
+        supabase
+          .from("user_profiles")
+          .select("is_complete")
+          .eq("user_id", user.id)
+          .maybeSingle(),
       ]);
 
       if (active) {
         setRemoteHistory((historyRes.data as RemoteEntry[] | null) ?? []);
+        setProfileComplete(profileRes.data?.is_complete ?? false);
         if (summaryRes.data) {
+          setPinnedRole(summaryRes.data.pinned_target_role ?? null);
           setCareerSummary({
             topSkillGaps: summaryRes.data.top_skill_gaps ?? [],
             projectsToStart: (summaryRes.data.projects_to_start ??
@@ -105,6 +120,64 @@ export default function AppDashboardPage() {
       active = false;
     };
   }, []);
+
+  const setRolePin = async (role: string | null) => {
+    setPinBusy(true);
+    setPinnedRole(role);
+    try {
+      await fetch("/api/profile/pin-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+    } catch {
+      // Best-effort; UI already reflects the optimistic value.
+    } finally {
+      setPinBusy(false);
+    }
+  };
+
+  const allActivityEntries: ActivityEntry[] = useMemo(() => {
+    const useRemote = isLoggedIn && remoteHistory !== null;
+    return useRemote
+      ? remoteHistory!.map((h) => ({
+          id: h.id,
+          jobTitle: h.job_title,
+          score: h.overall_score,
+          mode: h.mode,
+          createdAt: h.created_at,
+        }))
+      : localHistory.map((h) => ({
+          id: h.id,
+          jobTitle: h.jobTitleHint,
+          score: h.result.overallScore,
+          mode: "analysis",
+          createdAt: h.createdAt,
+        }));
+  }, [isLoggedIn, remoteHistory, localHistory]);
+
+  const activityEntries: ActivityEntry[] = useMemo(() => {
+    if (!pinnedRole) return allActivityEntries;
+    const needle = pinnedRole.toLowerCase();
+    return allActivityEntries.filter((e) => e.jobTitle?.toLowerCase().includes(needle));
+  }, [allActivityEntries, pinnedRole]);
+
+  const filteredTopSkillGaps = useMemo(() => {
+    if (!pinnedRole || !remoteHistory) return careerSummary?.topSkillGaps ?? [];
+    const needle = pinnedRole.toLowerCase();
+    const counts = new Map<string, number>();
+    for (const entry of remoteHistory) {
+      if (entry.mode !== "analysis") continue;
+      if (!entry.job_title?.toLowerCase().includes(needle)) continue;
+      for (const kw of entry.missing_keywords ?? []) {
+        counts.set(kw, (counts.get(kw) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([kw]) => kw);
+  }, [pinnedRole, remoteHistory, careerSummary]);
 
   const stats = useMemo(() => {
     // Prefer server-derived stats from user_career_summary when logged in
@@ -323,6 +396,15 @@ export default function AppDashboardPage() {
                   </div>
                 ))}
               </div>
+              {allActivityEntries.length > 0 && (
+                <div className="mt-6 border-t border-white/10 pt-5">
+                  <DashboardTrend
+                    points={allActivityEntries
+                      .filter((e) => e.mode === "analysis")
+                      .map((e) => ({ score: e.score, createdAt: e.createdAt }))}
+                  />
+                </div>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -335,8 +417,17 @@ export default function AppDashboardPage() {
                 NO SCANS YET
               </p>
               <p className="text-sm text-muted-foreground">
-                Run your first analysis and your stats will appear here.
+                {profileComplete === false
+                  ? "Complete your profile first so every tool has accurate data to work with."
+                  : "Run your first analysis and your stats will appear here."}
               </p>
+              <Link
+                href={profileComplete === false ? "/app/profile" : "/app/analyze"}
+                className="mt-4 inline-flex w-fit items-center gap-1.5 label-sm text-foreground hover:opacity-70 transition-opacity"
+              >
+                {profileComplete === false ? "COMPLETE PROFILE" : "RUN FIRST SCAN"}{" "}
+                <ChevronRight className="h-3 w-3" />
+              </Link>
             </motion.div>
           )}
         </div>
@@ -376,17 +467,41 @@ export default function AppDashboardPage() {
                     </p>
                   </div>
                 )}
-                {careerSummary.targetRoles.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    {careerSummary.targetRoles.map((role) => (
-                      <span
-                        key={role}
-                        className="bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/60"
-                      >
-                        {role}
-                      </span>
-                    ))}
+                {pinnedRole ? (
+                  <div className="mt-4 flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-1.5 bg-white text-foreground px-2 py-1 text-[10px] font-semibold uppercase tracking-wider">
+                      <Pin className="h-2.5 w-2.5" />
+                      {pinnedRole}
+                    </span>
+                    <button
+                      onClick={() => setRolePin(null)}
+                      disabled={pinBusy}
+                      title="Unpin — stop filtering by this role"
+                      className="flex h-6 w-6 items-center justify-center bg-white/10 text-white/60 hover:bg-white/20 hover:text-white transition-colors disabled:opacity-50"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   </div>
+                ) : (
+                  careerSummary.targetRoles.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-[10px] text-white/40 mb-1.5">
+                        Multiple roles detected — pin one to focus the dashboard:
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {careerSummary.targetRoles.map((role) => (
+                          <button
+                            key={role}
+                            onClick={() => setRolePin(role)}
+                            disabled={pinBusy}
+                            className="bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/60 hover:bg-white/20 hover:text-white transition-colors disabled:opacity-50"
+                          >
+                            {role}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
                 )}
               </motion.div>
 
@@ -404,10 +519,12 @@ export default function AppDashboardPage() {
                   </p>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Skills that keep appearing as missing across your analyses.
+                  {pinnedRole
+                    ? `Filtered to ${pinnedRole}.`
+                    : "Skills that keep appearing as missing across your analyses."}
                 </p>
                 <ul className="space-y-2 flex-1">
-                  {careerSummary.topSkillGaps.slice(0, 8).map((skill, i) => (
+                  {filteredTopSkillGaps.slice(0, 8).map((skill, i) => (
                     <li key={skill} className="flex items-center gap-3">
                       <span className="label-sm w-4 shrink-0 text-muted-foreground/50">
                         {String(i + 1).padStart(2, "0")}
@@ -418,9 +535,11 @@ export default function AppDashboardPage() {
                       </span>
                     </li>
                   ))}
-                  {careerSummary.topSkillGaps.length === 0 && (
+                  {filteredTopSkillGaps.length === 0 && (
                     <li className="text-xs text-muted-foreground">
-                      No persistent gaps detected yet.
+                      {pinnedRole
+                        ? "No gaps recorded yet for this role."
+                        : "No persistent gaps detected yet."}
                     </li>
                   )}
                 </ul>
@@ -497,6 +616,9 @@ export default function AppDashboardPage() {
             </div>
           </motion.div>
         )}
+
+        <RecentActivity entries={activityEntries} />
+        <ResumeComparison entries={activityEntries} />
       </motion.div>
     </div>
   );

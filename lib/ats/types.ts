@@ -25,6 +25,15 @@ export interface AtsGap {
   detail: string;
 }
 
+export type EvidenceStatus = "not_found" | "weakly_implied" | "strongly_demonstrated";
+
+export interface SkillEvidence {
+  skill: string;
+  status: EvidenceStatus;
+  /** Quoted or paraphrased resume line that justifies the status; null when not_found. */
+  evidence: string | null;
+}
+
 export interface ProjectRecommendation {
   title: string;
   description: string;
@@ -40,6 +49,7 @@ export interface CareerSummary {
   careerNarrative: string;
   nextStep: string;
   progressSummary: string | null;
+  pinnedTargetRole?: string | null;
 }
 
 export interface AtsEvaluationResult {
@@ -58,6 +68,8 @@ export interface AtsEvaluationResult {
   highValueSkills: string[];
   projectRecommendations: ProjectRecommendation[];
   careerGapSummary: string | null;
+  /** Per-skill citation for matched/mandatory/optional/highValue skills. Empty on older stored rows. */
+  skillEvidence: SkillEvidence[];
   generatedAt: string;
   processingMs: number;
   // Populated by the API when the user is authenticated; persisted in user_career_summary
