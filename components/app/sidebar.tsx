@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,13 +14,13 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import type { Route } from "next";
-import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAppSession } from "@/components/app/app-session-provider";
 import { clearEvaluationSessionData } from "@/store/evaluation-store";
 import { clearProfileSessionData } from "@/store/profile-store";
 
@@ -40,7 +40,7 @@ const navItems: Array<{
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAppSession();
 
   const clearLocalUserData = () => {
     clearEvaluationSessionData();
@@ -54,24 +54,6 @@ export function Sidebar() {
       // Ignore localStorage failures in restricted browser modes.
     }
   };
-
-  useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    supabase.auth
-      .getUser()
-      .then(({ data }: { data: { user: User | null } }) => setUser(data.user));
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, session: Session | null) => {
-        setUser(session?.user ?? null);
-      },
-    );
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleSignOut = async () => {
     const supabase = getSupabaseBrowserClient();

@@ -9,6 +9,7 @@ import {
   getSupabaseBrowserClient,
   hasSupabaseConfig,
 } from "@/lib/supabase/client";
+import { useAppSession } from "@/components/app/app-session-provider";
 import type { AtsEvaluationResult, SkillEvidence } from "@/lib/ats/types";
 
 const evidenceDotClass: Record<SkillEvidence["status"], string> = {
@@ -345,51 +346,40 @@ function LocalEntryCard({
 
 export default function HistoryPage() {
   const { history: localHistory } = useEvaluationStore();
+  const { user, ready } = useAppSession();
   const [remoteHistory, setRemoteHistory] = useState<RemoteEntry[] | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isResolvingSession, setIsResolvingSession] = useState(() =>
-    hasSupabaseConfig(),
-  );
+  const isLoggedIn = Boolean(user);
+  const isResolvingSession = hasSupabaseConfig() && (!ready || (Boolean(user) && remoteHistory === null));
 
   useEffect(() => {
+    if (!ready) return;
     const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
+    if (!supabase || !user) {
+      setRemoteHistory(null);
+      return;
+    }
+
     let isActive = true;
+    const userId = user.id;
 
     const loadHistory = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!isActive) return;
-
-      if (!user) {
-        setIsLoggedIn(false);
-        setRemoteHistory(null);
-        setIsResolvingSession(false);
-        return;
-      }
-
-      setIsLoggedIn(true);
-
       const { data: rows } = await supabase
         .from("user_evaluations")
         .select(
           "id, job_title, overall_score, mode, created_at, full_result, mandatory_skills, missing_keywords, career_gap_summary, ai_insight",
         )
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(30);
 
       if (!isActive) return;
 
       setRemoteHistory((rows as RemoteEntry[] | null) ?? []);
-      setIsResolvingSession(false);
     };
 
     void loadHistory();
     return () => { isActive = false; };
-  }, []);
+  }, [ready, user]);
 
   const displayList =
     isLoggedIn && remoteHistory !== null ? remoteHistory : null;

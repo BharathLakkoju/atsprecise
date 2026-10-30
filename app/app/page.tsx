@@ -30,6 +30,7 @@ import type { CareerSummary, ProjectRecommendation } from "@/lib/ats/types";
 import { DashboardTrend } from "@/components/app/dashboard-trend";
 import { RecentActivity, type ActivityEntry } from "@/components/app/recent-activity";
 import { ResumeComparison } from "@/components/app/resume-comparison";
+import { useAppSession } from "@/components/app/app-session-provider";
 
 interface RemoteEntry {
   id: string;
@@ -43,11 +44,12 @@ interface RemoteEntry {
 
 export default function AppDashboardPage() {
   const { history: localHistory } = useEvaluationStore();
+  const { user, ready } = useAppSession();
   const [mountedAt] = useState(() => Date.now());
   const [remoteHistory, setRemoteHistory] = useState<RemoteEntry[] | null>(
     null,
   );
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const isLoggedIn = Boolean(user);
   const [careerSummary, setCareerSummary] = useState<
     | (CareerSummary & {
         total_analyses: number;
@@ -61,36 +63,37 @@ export default function AppDashboardPage() {
   const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!hasSupabaseConfig()) return;
+    if (!ready) return;
+    if (!user || !hasSupabaseConfig()) {
+      setRemoteHistory(null);
+      setCareerSummary(null);
+      setProfileComplete(null);
+      return;
+    }
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
     let active = true;
+    const userId = user.id;
 
     const load = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!active || !user) return;
-      setIsLoggedIn(true);
-
       const [historyRes, summaryRes, profileRes] = await Promise.all([
         supabase
           .from("user_evaluations")
           .select(
             "id, job_title, overall_score, mode, created_at, mandatory_skills, missing_keywords",
           )
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(30),
         supabase
           .from("user_career_summary")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .maybeSingle(),
         supabase
           .from("user_profiles")
           .select("is_complete")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .maybeSingle(),
       ]);
 
@@ -119,7 +122,7 @@ export default function AppDashboardPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [ready, user]);
 
   const setRolePin = async (role: string | null) => {
     setPinBusy(true);
@@ -222,9 +225,8 @@ export default function AppDashboardPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-10 max-lg:mb-10">
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
       >
         <p className="label-sm text-muted-foreground">PRECISION PORTAL</p>
         <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">

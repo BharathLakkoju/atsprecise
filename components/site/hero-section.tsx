@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { FadeIn } from "@/components/site/fade-in";
 
 export function HeroSection() {
   const { scrollY } = useScroll();
@@ -37,77 +36,59 @@ export function HeroSection() {
       />
 
       <div className="container text-center">
-        {/* Badge */}
-        <FadeIn delay={0}>
-          <span className="label-sm inline-flex items-center gap-2 bg-surface-low px-4 py-2 text-muted-foreground">
-            <span className="h-1.5 w-1.5 bg-foreground" />
-            NEXT-GEN RESUME ANALYSIS
-          </span>
-        </FadeIn>
+        <span className="label-sm inline-flex items-center gap-2 bg-surface-low px-4 py-2 text-muted-foreground">
+          <span className="h-1.5 w-1.5 bg-foreground" />
+          NEXT-GEN RESUME ANALYSIS
+        </span>
 
-        {/* Headline */}
-        <FadeIn delay={0.05}>
-          <h1 className="mx-auto mt-8 max-w-4xl text-balance font-display text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-display-lg">
-            Engineered for
-            <br />
-            <em className="italic text-muted-foreground">Absolute Clarity.</em>
-          </h1>
-        </FadeIn>
+        <h1 className="mx-auto mt-8 max-w-4xl text-balance font-display text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-display-lg">
+          Engineered for
+          <br />
+          <em className="italic text-muted-foreground">Absolute Clarity.</em>
+        </h1>
 
-        {/* Subtitle */}
-        <FadeIn delay={0.12}>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-            Stop guessing. Our high-precision AI evaluates your resume through
-            the lens of modern ATS algorithms with mathematical rigor.
-          </p>
-        </FadeIn>
+        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+          Stop guessing. Our high-precision AI evaluates your resume through
+          the lens of modern ATS algorithms with mathematical rigor.
+        </p>
 
-        {/* CTAs */}
-        <FadeIn delay={0.2}>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="xl" asChild>
-              <Link href="/auth">Check ATS Score</Link>
-            </Button>
-            <Button variant="secondary" size="lg" asChild>
-              <Link href="/blog/sample-report">View Sample Report</Link>
-            </Button>
-          </div>
-        </FadeIn>
+        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <Button size="xl" asChild>
+            <Link href="/auth">Check ATS Score</Link>
+          </Button>
+          <Button variant="secondary" size="lg" asChild>
+            <Link href="/blog/sample-report">View Sample Report</Link>
+          </Button>
+        </div>
 
-        {/* App Preview Image */}
-        <FadeIn delay={0.3}>
-          <motion.div
-            style={{ y: cardY, scale: cardScale }}
-            className="mx-auto mt-28 max-w-4xl will-change-transform"
-          >
-            <div className="bg-surface-lowest p-1 shadow-panel">
-              <Image
-                src="/home_page.png"
-                alt="ATS Precise app preview"
-                width={1200}
-                height={800}
-                className="w-full object-cover"
-                priority
-              />
-            </div>
-          </motion.div>
-        </FadeIn>
-
-        {/* Scroll cue */}
-        <FadeIn delay={0.5}>
-          <div className="mt-12 flex flex-col items-center gap-2">
-            <motion.div
-              className="h-7 w-px bg-muted-foreground/40"
-              animate={{ scaleY: [0.4, 1, 0.4], opacity: [0.3, 1, 0.3] }}
-              transition={{
-                duration: 2.2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
+        <motion.div
+          style={{ y: cardY, scale: cardScale }}
+          className="mx-auto mt-28 max-w-4xl will-change-transform"
+        >
+          <div className="bg-surface-lowest p-1 shadow-panel">
+            <Image
+              src="/home_page.png"
+              alt="ATS Precise app preview"
+              width={1200}
+              height={800}
+              className="w-full object-cover"
+              priority
             />
-            <span className="label-sm text-muted-foreground/60">SCROLL</span>
           </div>
-        </FadeIn>
+        </motion.div>
+
+        <div className="mt-12 flex flex-col items-center gap-2">
+          <motion.div
+            className="h-7 w-px bg-muted-foreground/40"
+            animate={{ scaleY: [0.4, 1, 0.4], opacity: [0.3, 1, 0.3] }}
+            transition={{
+              duration: 2.2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <span className="label-sm text-muted-foreground/60">SCROLL</span>
+        </div>
       </div>
     </section>
   );
